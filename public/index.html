@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>SplitBill Bukber — Ramadan Companion</title>
+    <meta name="description" content="Patungan buka puasa cerdas + jadwal sholat, doa harian, kalkulator zakat. Semua kebutuhan Ramadan dalam satu aplikasi.">
+    <meta name="keywords" content="split bill, patungan bukber, buka puasa, Ramadan 2026, bayar online, scan struk, jadwal sholat, doa ramadan, kalkulator zakat">
+    <meta name="author" content="Muhammad Ketsar Ali Abi Wahid">
+    <meta name="robots" content="index, follow">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="SplitBill Bukber — Ramadan Companion">
+    <meta property="og:description" content="Patungan buka puasa + jadwal sholat + doa harian + kalkulator zakat. Satu app untuk Ramadan.">
+    <meta property="og:site_name" content="SplitBill Bukber">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect rx='20' width='100' height='100' fill='%231e1b4b'/><text x='50' y='68' font-size='55' text-anchor='middle'>🌙</text></svg>">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="apple-touch-icon" href="favicon.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#030014">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="aurora-bg"><div class="orb orb-1"></div><div class="orb orb-2"></div><div class="orb orb-3"></div></div>
+    <div class="particles" id="particles"></div>
+    <div id="confetti-container"></div>
+
+    <div class="app-wrapper">
+        <!-- Top Bar -->
+        <nav class="top-bar">
+            <div class="brand">
+                <span class="brand-icon">&#127769;</span>
+                <span class="brand-text">SplitBill <span class="brand-accent">Bukber</span></span>
+            </div>
+            <div class="nav-actions">
+                <button class="btn-icon" onclick="toggleThemePanel()" title="Tema"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></button>
+                <button class="btn-icon" onclick="toggleHistory()" title="Riwayat"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg></button>
+            </div>
+        </nav>
+
+        <!-- Countdown -->
+        <div class="countdown-bar" id="countdown-bar">
+            <span class="cd-label">Menuju Buka Puasa</span>
+            <span class="cd-timer" id="countdown-timer">--:--:--</span>
+            <span class="cd-loc" id="countdown-location">Jakarta (WIB)</span>
+        </div>
+
+        <!-- ===================== PAGE: SPLIT BILL ===================== -->
+        <div id="page-split" class="page active">
+            <!-- Hero -->
+            <header class="hero" id="hero-section">
+                <h1>Patungan Bukber<br><span class="gradient-text">Jadi Gampang!</span></h1>
+                <p class="hero-sub">Scan struk, bagi adil, bayar instan. Semua dalam satu langkah.</p>
+            </header>
+
+            <!-- Progress -->
+            <div class="progress-bar">
+                <div class="p-step active" data-step="1"><div class="p-circle">1</div><span>Input</span></div>
+                <div class="p-line"><div class="p-fill" id="pf-1"></div></div>
+                <div class="p-step" data-step="2"><div class="p-circle">2</div><span>Bagi</span></div>
+                <div class="p-line"><div class="p-fill" id="pf-2"></div></div>
+                <div class="p-step" data-step="3"><div class="p-circle">3</div><span>Bayar</span></div>
+            </div>
+
+            <!-- Glass Container -->
+            <div class="glass-card">
+                <!-- STEP 1: INPUT -->
+                <section id="step-upload" class="step active">
+                    <div class="sec-head"><h2>Input Data Struk</h2><p>Scan foto struk atau input manual.</p></div>
+                    <div class="tab-sw">
+                        <button class="tab-btn active" onclick="switchInputTab('scan')">Scan Struk</button>
+                        <button class="tab-btn" onclick="switchInputTab('manual')">Input Manual</button>
+                    </div>
+                    <div id="tab-scan" class="tab-c active">
+                        <div class="upload-area" id="drop-zone">
+                            <div class="upload-icon">&#128247;</div>
+                            <h3>Drag & Drop Struk</h3>
+                            <p>atau klik tombol di bawah</p>
+                            <input type="file" id="receipt-upload" accept="image/*" capture="environment" hidden>
+                            <div class="upload-btns">
+                                <button class="btn btn-primary" onclick="document.getElementById('receipt-upload').click()">Pilih Gambar</button>
+                                <button class="btn btn-outline" onclick="document.getElementById('receipt-upload').click()">Kamera</button>
+                            </div>
+                            <small class="hint">Pastikan foto jelas untuk hasil terbaik</small>
+                        </div>
+                        <div id="image-preview" class="img-preview hidden"><img id="preview-img" src="" alt="Preview"><div class="preview-over">Menganalisis...</div></div>
+                        <div id="loading" class="hidden loading-box">
+                            <div class="scan-frame"><div class="sf-c tl"></div><div class="sf-c tr"></div><div class="sf-c bl"></div><div class="sf-c br"></div><div class="scan-line"></div></div>
+                            <h3>Membaca Struk...</h3><p>Mengekstrak item dan harga</p>
+                            <div class="dots"><span></span><span></span><span></span></div>
+                        </div>
+                    </div>
+                    <div id="tab-manual" class="tab-c">
+                        <div class="manual-entry">
+                            <div class="m-row">
+                                <input type="text" id="manual-item-name" placeholder="Nama item">
+                                <input type="number" id="manual-item-price" placeholder="Harga" min="0" step="500">
+                                <button class="btn btn-accent btn-sq" onclick="addManualItem()">+</button>
+                            </div>
+                            <div id="manual-items-preview"></div>
+                            <button class="btn btn-primary btn-block" id="btn-manual-next" onclick="manualToStep2()" style="display:none">Lanjut Bagi Tagihan</button>
+                        </div>
+                    </div>
+                    <div class="demo-sec">
+                        <p>Mau coba dulu?</p>
+                        <button class="btn btn-ghost" onclick="loadDemoData()">Data Demo (8 Item)</button>
+                    </div>
+                </section>
+
+                <!-- STEP 2: SPLIT -->
+                <section id="step-split" class="step hidden">
+                    <div class="sec-head"><h2>Bagi Tagihan</h2><p>Tambah teman, tentukan siapa pesan apa.</p></div>
+                    <div class="summary-card" id="receipt-summary"><div class="sum-stats" id="summary-stats"></div></div>
+                    <div class="section-block">
+                        <div class="sb-head"><h3>Teman Patungan</h3><span class="badge" id="friend-count">0</span></div>
+                        <div class="input-row"><input type="text" id="friend-name" placeholder="Ketik nama lalu Enter"><button class="btn btn-accent" onclick="addFriend()">Tambah</button></div>
+                        <div id="friends-list" class="tags"></div>
+                    </div>
+                    <div class="section-block">
+                        <div class="sb-head"><h3>Daftar Pesanan</h3><span class="badge green" id="items-total-display">Rp 0</span></div>
+                        <div id="items-list" class="items-list"></div>
+                        <div class="add-inline">
+                            <button class="btn btn-ghost btn-sm" onclick="showAddItemInline()">+ Tambah Item</button>
+                            <div id="inline-add-form" class="hidden i-form">
+                                <input type="text" id="inline-item-name" placeholder="Nama"><input type="number" id="inline-item-price" placeholder="Harga" min="0"><button class="btn btn-accent btn-sq" onclick="addInlineItem()">+</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="section-block extras">
+                        <h3>Biaya Tambahan</h3>
+                        <div class="extras-grid">
+                            <div class="ext"><label>Pajak %</label><input type="number" id="tax-percent" value="0" min="0" max="100"></div>
+                            <div class="ext"><label>Service %</label><input type="number" id="service-percent" value="0" min="0" max="100"></div>
+                            <div class="ext"><label>Diskon (Rp)</label><input type="number" id="discount-amount" value="0" min="0"></div>
+                        </div>
+                    </div>
+                    <div class="step-actions"><button class="btn btn-outline" onclick="goToStep(1)">Kembali</button><button class="btn btn-primary btn-block" onclick="calculateSplit()">Hitung Tagihan</button></div>
+                </section>
+
+                <!-- STEP 3: PAY -->
+                <section id="step-pay" class="step hidden">
+                    <div class="sec-head"><h2>Hasil & Pembayaran</h2><p>Tagihan dihitung. Buat link pembayaran.</p></div>
+                    <div id="grand-total-card" class="grand-card"></div>
+                    <div id="breakdown-section" class="breakdown"></div>
+                    <div id="results-list" class="results-grid"></div>
+                    <div class="share-box">
+                        <h3>Bagikan</h3>
+                        <div class="share-btns"><button class="btn btn-ghost" onclick="shareViaWhatsApp()">WhatsApp</button><button class="btn btn-ghost" onclick="copyShareText()">Salin Teks</button></div>
+                    </div>
+                    <div class="step-actions"><button class="btn btn-outline" onclick="goToStep(2)">Edit</button><button class="btn btn-primary btn-block" onclick="resetApp()">Mulai Baru</button></div>
+                </section>
+            </div>
+        </div>
+
+        <!-- ===================== PAGE: JADWAL SHOLAT ===================== -->
+        <div id="page-jadwal" class="page">
+            <div class="glass-card">
+                <div class="sec-head"><h2>Jadwal Sholat</h2><p>Waktu sholat hari ini — Jakarta (WIB)</p></div>
+                <div class="date-display" id="hijri-date"></div>
+                <div id="prayer-list" class="prayer-list"></div>
+                <div class="prayer-note">Waktu sholat dihitung berdasarkan koordinat Jakarta. Selisih 1-2 menit mungkin terjadi.</div>
+            </div>
+        </div>
+
+        <!-- ===================== PAGE: DOA HARIAN ===================== -->
+        <div id="page-doa" class="page">
+            <div class="glass-card">
+                <div class="sec-head"><h2>Doa Harian Ramadan</h2><p>Kumpulan doa penting selama bulan suci.</p></div>
+                <div id="doa-list" class="doa-list"></div>
+            </div>
+        </div>
+
+        <!-- ===================== PAGE: ZAKAT ===================== -->
+        <div id="page-zakat" class="page">
+            <div class="glass-card">
+                <div class="sec-head"><h2>Kalkulator Zakat</h2><p>Hitung zakat mal Anda dengan mudah dan bayar langsung.</p></div>
+                <div class="zakat-form">
+                    <div class="zk-field">
+                        <label>Total Harta / Tabungan (Rp)</label>
+                        <input type="number" id="zakat-harta" placeholder="Contoh: 50000000" min="0">
+                    </div>
+                    <div class="zk-field">
+                        <label>Hutang yang Harus Dibayar (Rp)</label>
+                        <input type="number" id="zakat-hutang" value="0" min="0">
+                    </div>
+                    <button class="btn btn-primary btn-block" onclick="calculateZakat()">Hitung Zakat</button>
+                    <div id="zakat-result" class="hidden zakat-result"></div>
+                </div>
+                <div class="zakat-info">
+                    <h3>Tentang Zakat Mal</h3>
+                    <div class="info-items">
+                        <div class="info-item"><strong>Nisab</strong><span>Setara 85 gram emas (~Rp 85.000.000)</span></div>
+                        <div class="info-item"><strong>Tarif</strong><span>2,5% dari total harta bersih</span></div>
+                        <div class="info-item"><strong>Syarat</strong><span>Harta dimiliki penuh selama 1 tahun (haul)</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Panel -->
+        <div class="side-panel hidden" id="history-panel">
+            <div class="sp-head"><h3>Riwayat</h3><button class="btn-icon" onclick="toggleHistory()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+            <div id="history-list"></div>
+            <button class="btn btn-ghost btn-sm btn-block" onclick="clearHistory()" style="margin-top:12px">Hapus Semua</button>
+        </div>
+        <div class="overlay hidden" id="history-overlay" onclick="toggleHistory()"></div>
+
+        <!-- Theme Panel (bottom sheet) -->
+        <div class="bottom-sheet hidden" id="theme-panel">
+            <div class="bs-head"><h3>Pilih Tema</h3><button class="btn-icon" onclick="toggleThemePanel()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+            <div class="theme-grid">
+                <button class="theme-opt active" data-theme="dark" onclick="setTheme('dark')"><span class="th-dot dark-dot"></span><span>Dark</span></button>
+                <button class="theme-opt" data-theme="ramadan" onclick="setTheme('ramadan')"><span class="th-dot ramadan-dot"></span><span>Ramadan</span></button>
+                <button class="theme-opt" data-theme="light" onclick="setTheme('light')"><span class="th-dot light-dot"></span><span>Light</span></button>
+            </div>
+        </div>
+        <div class="overlay hidden" id="theme-overlay" onclick="toggleThemePanel()"></div>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>&copy; 2026 <strong>Muhammad Ketsar Ali Abi Wahid</strong></p>
+            <p class="footer-sub">Crafted for Mayar Vibecoding Competition — Ramadan 2026</p>
+        </footer>
+
+        <!-- Bottom Nav -->
+        <nav class="bottom-nav" id="bottom-nav">
+            <button class="nav-item active" data-page="split" onclick="switchPage('split')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 10h20M10 4v16"/></svg>
+                <span>Split Bill</span>
+            </button>
+            <button class="nav-item" data-page="jadwal" onclick="switchPage('jadwal')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                <span>Jadwal</span>
+            </button>
+            <button class="nav-item" data-page="doa" onclick="switchPage('doa')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+                <span>Doa</span>
+            </button>
+            <button class="nav-item" data-page="zakat" onclick="switchPage('zakat')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+                <span>Zakat</span>
+            </button>
+        </nav>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(() => {});
+        }
+    </script>
+</body>
+</html>
