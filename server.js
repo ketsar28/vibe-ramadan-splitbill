@@ -216,6 +216,12 @@ app.get("/api/kalender/:tahun/:bulan", async (req, res) => {
 });
 
 
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
-});
+// Export for Netlify Functions
+module.exports = app;
+
+// Run listen only if called directly (local development)
+if (require.main === module) {
+  app.listen(port, () => {
+    console.log(`Server running at http://localhost:${port}`);
+  });
+}
