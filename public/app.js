@@ -1,5 +1,5 @@
 // ============================================================
-// SplitBill Bukber — Ramadan Companion App
+// Ramadan Companion App v2.0
 // (c) 2026 Muhammad Ketsar Ali Abi Wahid. All rights reserved.
 // Crafted for Mayar Vibecoding Competition — Ramadan 2026
 // ============================================================
@@ -18,6 +18,8 @@ document.addEventListener('DOMContentLoaded', () => {
     renderPrayerTimes();
     renderDoas();
     checkPaymentReturn();
+    restoreState();
+    initCitySearch();
 });
 
 // ===== PARTICLES =====
@@ -36,33 +38,33 @@ function createParticles() {
     }
 }
 
-// ===== COUNTDOWN (Maghrib-based from API if available) =====
+// ===== COUNTDOWN (Maghrib-based from API) =====
 let maghribTime = null;
 
 function startCountdown() {
+    // Set default location text immediately
+    const loc = document.getElementById('countdown-location');
+    const savedCity = localStorage.getItem('splitbill_city');
+    if (savedCity) {
+        try { loc.textContent = JSON.parse(savedCity).name; } catch(e) { loc.textContent = 'Jakarta (WIB)'; }
+    } else {
+        loc.textContent = 'Jakarta (WIB)';
+    }
+
     function update() {
         const now = new Date();
         let iftarTarget;
-
         if (maghribTime) {
-            // Use actual Maghrib time from API
             const [h, m] = maghribTime.split(':').map(Number);
-            iftarTarget = new Date(now);
-            iftarTarget.setHours(h, m, 0, 0);
+            iftarTarget = new Date(now); iftarTarget.setHours(h, m, 0, 0);
         } else {
-            // Fallback: 18:11 WIB (approx Jakarta Maghrib)
-            iftarTarget = new Date(now);
-            iftarTarget.setHours(18, 11, 0, 0);
+            iftarTarget = new Date(now); iftarTarget.setHours(18, 11, 0, 0);
         }
-
         const bar = document.getElementById('countdown-bar');
         const timer = document.getElementById('countdown-timer');
-        const loc = document.getElementById('countdown-location');
-
         if (now >= iftarTarget) {
             timer.textContent = 'Waktunya Berbuka!';
             bar.classList.add('iftar-time');
-            loc.textContent = 'Selamat berbuka puasa';
         } else {
             bar.classList.remove('iftar-time');
             const d = iftarTarget - now;
@@ -76,15 +78,40 @@ function startCountdown() {
 function pad(n) { return n.toString().padStart(2, '0'); }
 
 // ===== PAGE NAVIGATION =====
+const MORE_PAGES = ['zakat', 'kiblat', 'quran'];
+
 window.switchPage = function(page) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById('page-' + page).classList.add('active');
+    const target = document.getElementById('page-' + page);
+    if (target) target.classList.add('active');
+    
+    // Update bottom nav highlights
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    document.querySelector(`[data-page="${page}"]`).classList.add('active');
+    document.querySelectorAll('.more-item').forEach(m => m.classList.remove('active'));
+    
+    if (MORE_PAGES.includes(page)) {
+        // Highlight "Lainnya" button + the specific more-item
+        const moreBtn = document.getElementById('nav-more-btn');
+        if (moreBtn) moreBtn.classList.add('active');
+        const moreItem = document.querySelector(`.more-item[data-page="${page}"]`);
+        if (moreItem) moreItem.classList.add('active');
+    } else {
+        const navBtn = document.querySelector(`.nav-item[data-page="${page}"]`);
+        if (navBtn) navBtn.classList.add('active');
+    }
+    
+    // Show hero only on home
     const hero = document.getElementById('hero-section');
-    if (hero) hero.style.display = (page === 'split' && currentStep === 1) ? '' : 'none';
+    if (hero) hero.style.display = (page === 'home') ? '' : 'none';
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
+
+// ===== MORE MENU =====
+window.toggleMoreMenu = function() {
+    document.getElementById('more-menu').classList.toggle('hidden');
+    document.getElementById('more-overlay').classList.toggle('hidden');
+};
+
 
 // ===== THEME =====
 window.toggleThemePanel = function() {
@@ -97,8 +124,8 @@ window.setTheme = function(theme) {
     if (theme !== 'dark') document.body.classList.add('theme-' + theme);
     document.querySelectorAll('.theme-opt').forEach(o => o.classList.toggle('active', o.dataset.theme === theme));
     localStorage.setItem('splitbill_theme', theme);
-    const tc = theme === 'light' ? '#f5f7fa' : theme === 'ramadan' ? '#060d08' : '#030014';
-    document.querySelector('meta[name="theme-color"]').content = tc;
+    const themeColors = { dark: '#030014', light: '#f5f7fa', ramadan: '#060d08', ocean: '#020617', sunset: '#1c0a00' };
+    document.querySelector('meta[name="theme-color"]').content = themeColors[theme] || '#030014';
     toggleThemePanel();
 };
 
@@ -112,32 +139,30 @@ function loadTheme() {
 // ===== STEP NAVIGATION =====
 function goToStep(step) {
     const steps = [document.getElementById('step-upload'), document.getElementById('step-split'), document.getElementById('step-pay')];
-    steps.forEach(s => { s.classList.remove('active'); s.classList.add('hidden'); });
-    steps[step - 1].classList.remove('hidden');
-    steps[step - 1].classList.add('active');
+    steps.forEach(s => { if(s) { s.classList.remove('active'); s.classList.add('hidden'); }});
+    if (steps[step-1]) { steps[step-1].classList.remove('hidden'); steps[step-1].classList.add('active'); }
     document.querySelectorAll('.p-step').forEach((ps, i) => {
         ps.classList.remove('active', 'completed');
         if (i + 1 === step) ps.classList.add('active');
         else if (i + 1 < step) ps.classList.add('completed');
     });
-    document.getElementById('pf-1').style.width = step >= 2 ? '100%' : '0%';
-    document.getElementById('pf-2').style.width = step >= 3 ? '100%' : '0%';
-    const hero = document.getElementById('hero-section');
-    if (hero) hero.style.display = step > 1 ? 'none' : '';
+    const pf1 = document.getElementById('pf-1'); if (pf1) pf1.style.width = step >= 2 ? '100%' : '0%';
+    const pf2 = document.getElementById('pf-2'); if (pf2) pf2.style.width = step >= 3 ? '100%' : '0%';
     currentStep = step;
+    saveState();
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // ===== TAB SWITCHER =====
 window.switchInputTab = function(tab) {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-c').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('#page-split .tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('#page-split .tab-c').forEach(c => c.classList.remove('active'));
     if (tab === 'scan') {
-        document.querySelectorAll('.tab-btn')[0].classList.add('active');
-        document.getElementById('tab-scan').classList.add('active');
+        document.querySelectorAll('#page-split .tab-btn')[0]?.classList.add('active');
+        document.getElementById('tab-scan')?.classList.add('active');
     } else {
-        document.querySelectorAll('.tab-btn')[1].classList.add('active');
-        document.getElementById('tab-manual').classList.add('active');
+        document.querySelectorAll('#page-split .tab-btn')[1]?.classList.add('active');
+        document.getElementById('tab-manual')?.classList.add('active');
     }
 };
 
@@ -173,28 +198,29 @@ async function handleFile(file) {
 function resetUploadUI() {
     if (dropZone) dropZone.style.display = '';
     const demo = document.querySelector('.demo-sec'); if (demo) demo.style.display = '';
-    document.getElementById('loading').classList.add('hidden');
-    document.getElementById('image-preview').classList.add('hidden');
+    document.getElementById('loading')?.classList.add('hidden');
+    document.getElementById('image-preview')?.classList.add('hidden');
 }
 
 // ===== MANUAL ENTRY =====
 window.addManualItem = function() {
     const ni = document.getElementById('manual-item-name'), pi = document.getElementById('manual-item-price');
-    const name = ni.value.trim(), price = parseFloat(pi.value) || 0;
+    const name = ni.value.trim(), price = parseFloat(pi.value.replace(/\./g, '')) || 0;
     if (!name || price <= 0) { showToast('Isi nama dan harga'); return; }
     parsedItems.push({ name, price, assignedTo: 'Bagi Rata' });
     ni.value = ''; pi.value = ''; ni.focus();
-    renderManualPreview();
+    renderManualPreview(); saveState();
 };
 document.getElementById('manual-item-name')?.addEventListener('keypress', e => { if (e.key === 'Enter') document.getElementById('manual-item-price').focus(); });
 document.getElementById('manual-item-price')?.addEventListener('keypress', e => { if (e.key === 'Enter') addManualItem(); });
 
 function renderManualPreview() {
     const c = document.getElementById('manual-items-preview'), btn = document.getElementById('btn-manual-next');
+    if (!c) return;
     c.innerHTML = parsedItems.map((item, i) => `<div class="manual-item"><span class="mi-name">${esc(item.name)}</span><span class="mi-price">Rp ${fmt(item.price)}</span><button class="mi-delete" onclick="removeManualItem(${i})">x</button></div>`).join('');
-    btn.style.display = parsedItems.length > 0 ? 'flex' : 'none';
+    if (btn) btn.style.display = parsedItems.length > 0 ? 'flex' : 'none';
 }
-window.removeManualItem = function(i) { parsedItems.splice(i, 1); renderManualPreview(); };
+window.removeManualItem = function(i) { parsedItems.splice(i, 1); renderManualPreview(); saveState(); };
 window.manualToStep2 = function() { if (!parsedItems.length) { showToast('Tambah minimal 1 item'); return; } transitionToStep2(); };
 
 // ===== DEMO =====
@@ -220,7 +246,8 @@ function transitionToStep2() { goToStep(2); renderReceiptSummary(); renderFriend
 function renderReceiptSummary() {
     const total = parsedItems.reduce((s, i) => s + i.price, 0);
     const avg = parsedItems.length ? total / parsedItems.length : 0;
-    document.getElementById('summary-stats').innerHTML = `
+    const el = document.getElementById('summary-stats');
+    if (el) el.innerHTML = `
         <div class="sum-v"><div class="sum-val">${parsedItems.length}</div><div class="sum-lbl">Item</div></div>
         <div class="sum-v"><div class="sum-val">Rp ${fmt(total)}</div><div class="sum-lbl">Total</div></div>
         <div class="sum-v"><div class="sum-val">Rp ${fmt(Math.round(avg))}</div><div class="sum-lbl">Rata-rata</div></div>`;
@@ -229,46 +256,47 @@ function renderReceiptSummary() {
 // ===== FRIENDS =====
 window.addFriend = function() {
     const input = document.getElementById('friend-name'), name = input.value.trim();
-    if (name && !friends.includes(name)) { friends.push(name); input.value = ''; renderFriends(); renderItems(); }
+    if (name && !friends.includes(name)) { friends.push(name); input.value = ''; renderFriends(); renderItems(); saveState(); }
     else if (friends.includes(name)) showToast('Nama sudah ada');
     input.focus();
 };
 document.getElementById('friend-name')?.addEventListener('keypress', e => { if (e.key === 'Enter') addFriend(); });
-window.removeFriend = function(name) { friends = friends.filter(f => f !== name); parsedItems.forEach(i => { if (i.assignedTo === name) i.assignedTo = 'Bagi Rata'; }); renderFriends(); renderItems(); };
+window.removeFriend = function(name) { friends = friends.filter(f => f !== name); parsedItems.forEach(i => { if (i.assignedTo === name) i.assignedTo = 'Bagi Rata'; }); renderFriends(); renderItems(); saveState(); };
 
 function renderFriends() {
-    document.getElementById('friend-count').textContent = friends.length;
-    document.getElementById('friends-list').innerHTML = friends.map(f => `<span class="tag">${esc(f)} <span class="remove" onclick="removeFriend('${esc(f)}')">&times;</span></span>`).join('');
+    const fc = document.getElementById('friend-count'); if (fc) fc.textContent = friends.length;
+    const fl = document.getElementById('friends-list');
+    if (fl) fl.innerHTML = friends.map(f => `<span class="tag">${esc(f)} <span class="remove" onclick="removeFriend('${esc(f)}')">&times;</span></span>`).join('');
 }
 
 // ===== ITEMS =====
 function renderItems() {
     const c = document.getElementById('items-list');
+    if (!c) return;
     const opts = `<option value="Bagi Rata">Bagi Rata</option>${friends.map(f => `<option value="${esc(f)}">${esc(f)}</option>`).join('')}`;
     c.innerHTML = parsedItems.map((item, i) => `<div class="item-row"><div class="item-number">${i+1}</div><div class="item-info"><div class="item-name">${esc(item.name)}</div><div class="item-price">Rp ${fmt(item.price)}</div></div><select class="item-assign" onchange="assignItem(${i},this.value)">${opts.replace(`value="${esc(item.assignedTo)}"`, `value="${esc(item.assignedTo)}" selected`)}</select><button class="item-delete" onclick="deleteItem(${i})">x</button></div>`).join('');
     updateItemsTotal(); renderReceiptSummary();
 }
-window.assignItem = (i, p) => { parsedItems[i].assignedTo = p; };
-window.deleteItem = function(i) { parsedItems.splice(i, 1); renderItems(); };
+window.assignItem = (i, p) => { parsedItems[i].assignedTo = p; saveState(); };
+window.deleteItem = function(i) { parsedItems.splice(i, 1); renderItems(); saveState(); };
 function updateItemsTotal() { const el = document.getElementById('items-total-display'); if (el) el.textContent = 'Rp ' + fmt(parsedItems.reduce((s, i) => s + i.price, 0)); }
 
-window.showAddItemInline = function() { const f = document.getElementById('inline-add-form'); f.classList.toggle('hidden'); if (!f.classList.contains('hidden')) document.getElementById('inline-item-name').focus(); };
+window.showAddItemInline = function() { const f = document.getElementById('inline-add-form'); if(f) { f.classList.toggle('hidden'); if (!f.classList.contains('hidden')) document.getElementById('inline-item-name')?.focus(); } };
 window.addInlineItem = function() {
-    const name = document.getElementById('inline-item-name').value.trim(), price = parseFloat(document.getElementById('inline-item-price').value) || 0;
+    const name = document.getElementById('inline-item-name')?.value.trim(), price = parseFloat(document.getElementById('inline-item-price')?.value.replace(/\./g, '')) || 0;
     if (!name || price <= 0) { showToast('Isi nama dan harga'); return; }
     parsedItems.push({ name, price, assignedTo: 'Bagi Rata' });
     document.getElementById('inline-item-name').value = ''; document.getElementById('inline-item-price').value = '';
-    renderItems();
+    renderItems(); saveState();
 };
 
 // ===== CALCULATE =====
 window.calculateSplit = function() {
     if (!friends.length) { showToast('Tambah minimal 1 teman'); return; }
     if (!parsedItems.length) { showToast('Tidak ada item'); return; }
-
-    const taxP = parseFloat(document.getElementById('tax-percent').value) || 0;
-    const svcP = parseFloat(document.getElementById('service-percent').value) || 0;
-    const disc = parseFloat(document.getElementById('discount-amount').value) || 0;
+    const taxP = parseFloat(document.getElementById('tax-percent')?.value) || 0;
+    const svcP = parseFloat(document.getElementById('service-percent')?.value) || 0;
+    const disc = parseFloat(document.getElementById('discount-amount')?.value) || 0;
     const sub = parsedItems.reduce((s, i) => s + i.price, 0);
     const tax = sub * taxP / 100, svc = sub * svcP / 100;
     const grand = sub + tax + svc - disc;
@@ -322,37 +350,21 @@ function launchConfetti() {
 
 // ===== PAYMENT SUCCESS DETECTION =====
 function checkPaymentReturn() {
-    // Check if there was a pending payment (user returned from Mayar tab)
     const pending = localStorage.getItem('splitbill_pending_pay');
     if (pending) {
         try {
             const data = JSON.parse(pending);
-            // If payment was initiated less than 30 minutes ago
-            if (Date.now() - data.time < 1800000) {
-                showPaymentSuccessModal(data.name, data.amount);
-            }
+            if (Date.now() - data.time < 1800000) showPaymentSuccessModal(data.name, data.amount);
         } catch(e) {}
         localStorage.removeItem('splitbill_pending_pay');
     }
 }
 
 function showPaymentSuccessModal(name, amount) {
-    const existing = document.querySelector('.payment-modal');
-    if (existing) existing.remove();
-
-    const modal = document.createElement('div');
-    modal.className = 'payment-modal';
-    modal.innerHTML = `
-        <div class="pm-content">
-            <div class="pm-icon">&#10004;</div>
-            <h2>Pembayaran Terkirim!</h2>
-            <p>${name ? 'Pembayaran untuk <strong>' + esc(name) + '</strong>' : 'Pembayaran Anda'} ${amount ? 'sebesar <strong>Rp ' + fmt(amount) + '</strong>' : ''} telah diproses oleh Mayar.</p>
-            <p class="pm-sub">Cek email untuk resi pembayaran.</p>
-            <button class="btn btn-primary btn-block" onclick="this.closest('.payment-modal').remove()">Tutup</button>
-        </div>
-    `;
-    document.body.appendChild(modal);
-    launchConfetti();
+    const existing = document.querySelector('.payment-modal'); if (existing) existing.remove();
+    const modal = document.createElement('div'); modal.className = 'payment-modal';
+    modal.innerHTML = `<div class="pm-content"><div class="pm-icon">&#10004;</div><h2>Pembayaran Terkirim!</h2><p>${name ? 'Pembayaran untuk <strong>' + esc(name) + '</strong>' : 'Pembayaran Anda'} ${amount ? 'sebesar <strong>Rp ' + fmt(amount) + '</strong>' : ''} telah diproses oleh Mayar.</p><p class="pm-sub">Cek email untuk resi pembayaran.</p><button class="btn btn-primary btn-block" onclick="this.closest('.payment-modal').remove()">Tutup</button></div>`;
+    document.body.appendChild(modal); launchConfetti();
 }
 
 // ===== MAYAR PAYMENT =====
@@ -361,38 +373,21 @@ window.payMayar = async function(name, amount) {
     const btn = document.getElementById('btn-pay-' + sanitize(name));
     if (!btn) return;
     btn.textContent = 'Memproses...'; btn.disabled = true; btn.style.opacity = '.7';
-
     try {
-        const res = await fetch('/api/pay', {
-            method: 'POST',
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({ payerName: name, amount, description: 'Patungan Bukber - ' + name })
-        });
+        const res = await fetch('/api/pay', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ payerName: name, amount, description: 'Patungan Bukber - ' + name }) });
         const r = await res.json();
         if (r.success && r.link) {
-            // Save pending payment info
             localStorage.setItem('splitbill_pending_pay', JSON.stringify({ name, amount, time: Date.now() }));
-
             btn.textContent = 'Link Siap'; btn.style.opacity = '1';
             btn.style.background = 'linear-gradient(135deg,#10b981,#059669)';
-
-            // Open Mayar in new tab
-            const payWindow = window.open(r.link, '_blank');
-
-            // Listen for when user comes back to this tab
+            window.open(r.link, '_blank');
             const onReturn = () => {
                 if (document.visibilityState === 'visible') {
                     document.removeEventListener('visibilitychange', onReturn);
-                    setTimeout(() => {
-                        showPaymentSuccessModal(name, amount);
-                        btn.textContent = 'Sudah Dibayar';
-                        btn.disabled = true;
-                        localStorage.removeItem('splitbill_pending_pay');
-                    }, 800);
+                    setTimeout(() => { showPaymentSuccessModal(name, amount); btn.textContent = 'Sudah Dibayar'; btn.disabled = true; localStorage.removeItem('splitbill_pending_pay'); }, 800);
                 }
             };
             document.addEventListener('visibilitychange', onReturn);
-
             showToast('Halaman pembayaran dibuka di tab baru');
         } else throw new Error();
     } catch (e) {
@@ -434,53 +429,176 @@ function loadHistory() {
     try {
         const h = JSON.parse(localStorage.getItem('splitbill_history') || '[]');
         const c = document.getElementById('history-list');
+        if (!c) return;
         if (!h.length) { c.innerHTML = '<p class="empty-hist">Belum ada riwayat.</p>'; return; }
         c.innerHTML = h.map(x => `<div class="history-card"><div class="hc-date">${x.date}</div><div class="hc-total">Rp ${fmt(x.total)}</div><div class="hc-people">${x.people} orang: ${x.friends.join(', ')}</div></div>`).join('');
     } catch(e) {}
 }
-window.toggleHistory = function() { document.getElementById('history-panel').classList.toggle('hidden'); document.getElementById('history-overlay').classList.toggle('hidden'); };
+window.toggleHistory = function() { document.getElementById('history-panel')?.classList.toggle('hidden'); document.getElementById('history-overlay')?.classList.toggle('hidden'); };
 window.clearHistory = function() { localStorage.removeItem('splitbill_history'); loadHistory(); showToast('Riwayat dihapus'); };
 
 // ===== RESET =====
-window.resetApp = function() { friends = []; parsedItems = []; splitResults = {}; goToStep(1); resetUploadUI(); const mp = document.getElementById('manual-items-preview'); if (mp) mp.innerHTML = ''; const btn = document.getElementById('btn-manual-next'); if (btn) btn.style.display = 'none'; showToast('Fresh start!'); };
+window.resetApp = function() {
+    friends = []; parsedItems = []; splitResults = {};
+    goToStep(1); resetUploadUI();
+    const mp = document.getElementById('manual-items-preview'); if (mp) mp.innerHTML = '';
+    const btn = document.getElementById('btn-manual-next'); if (btn) btn.style.display = 'none';
+    clearState();
+    showToast('Fresh start!');
+};
 
 // ============================================================
-// JADWAL SHOLAT — from Aladhan API via server proxy
+// STATE PERSISTENCE — Auto-save split bill data
 // ============================================================
-async function renderPrayerTimes() {
+function saveState() {
+    try {
+        localStorage.setItem('splitbill_state', JSON.stringify({
+            friends, parsedItems, currentStep, timestamp: Date.now()
+        }));
+    } catch(e) {}
+}
+
+function restoreState() {
+    try {
+        const raw = localStorage.getItem('splitbill_state');
+        if (!raw) return;
+        const state = JSON.parse(raw);
+        // Only restore if less than 24 hours old
+        if (Date.now() - state.timestamp > 86400000) { clearState(); return; }
+        if (state.friends?.length || state.parsedItems?.length) {
+            friends = state.friends || [];
+            parsedItems = state.parsedItems || [];
+            if (state.currentStep > 1 && parsedItems.length > 0) {
+                // Switch to split bill page and restore step
+                switchPage('split');
+                transitionToStep2();
+                if (state.currentStep === 1) goToStep(1);
+                showToast('Data sebelumnya dipulihkan');
+            }
+        }
+    } catch(e) { clearState(); }
+}
+
+function clearState() {
+    localStorage.removeItem('splitbill_state');
+}
+
+// ============================================================
+// JADWAL SHOLAT — MyQuran v3 (Kemenag RI)
+// ============================================================
+let selectedCityId = null;
+let selectedCityName = '';
+
+function initCitySearch() {
+    const input = document.getElementById('city-search-input');
+    if (!input) return;
+
+    // Load saved city
+    const saved = localStorage.getItem('splitbill_city');
+    if (saved) {
+        try {
+            const city = JSON.parse(saved);
+            selectedCityId = city.id;
+            selectedCityName = city.name;
+            input.value = city.name;
+            renderPrayerTimes(city.id);
+        } catch(e) {}
+    }
+
+    let debounce;
+    input.addEventListener('input', () => {
+        clearTimeout(debounce);
+        const q = input.value.trim();
+        if (q.length < 2) { hideCityResults(); return; }
+        debounce = setTimeout(() => searchCities(q), 300);
+    });
+
+    // Close results on click outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.city-search')) hideCityResults();
+    });
+}
+
+async function searchCities(keyword) {
+    const container = document.getElementById('city-results');
+    if (!container) return;
+    container.classList.remove('hidden');
+    container.innerHTML = '<div class="city-loading">Mencari...</div>';
+
+    try {
+        const res = await fetch('/api/cities?q=' + encodeURIComponent(keyword));
+        const data = await res.json();
+        if (data.success && data.data.length > 0) {
+            container.innerHTML = data.data.map(c => `<div class="city-option" onclick="selectCity('${c.id}','${esc(c.lokasi)}')">${c.lokasi}</div>`).join('');
+        } else {
+            container.innerHTML = '<div class="city-loading">Tidak ditemukan</div>';
+        }
+    } catch(e) {
+        container.innerHTML = '<div class="city-loading">Gagal mencari</div>';
+    }
+}
+
+window.selectCity = function(id, name) {
+    selectedCityId = id;
+    selectedCityName = name;
+    document.getElementById('city-search-input').value = name;
+    hideCityResults();
+    localStorage.setItem('splitbill_city', JSON.stringify({ id, name }));
+    renderPrayerTimes(id);
+    // Update countdown location
+    const loc = document.getElementById('countdown-location');
+    if (loc) loc.textContent = name;
+    showToast('Kota diganti: ' + name);
+};
+
+function hideCityResults() {
+    const c = document.getElementById('city-results');
+    if (c) c.classList.add('hidden');
+}
+
+async function renderPrayerTimes(cityId) {
     const container = document.getElementById('prayer-list');
-    const dateEl = document.getElementById('hijri-date');
+    const dateEl = document.getElementById('jadwal-date');
+    const locEl = document.getElementById('jadwal-location');
 
-    // Show loading state
+    if (!container) return;
     container.innerHTML = '<div class="prayer-card"><div class="pr-left"><span class="pr-name">Memuat jadwal...</span></div></div>';
 
     try {
-        const res = await fetch('/api/prayer-times');
+        const params = cityId ? `?cityId=${cityId}` : '';
+        const res = await fetch('/api/prayer-times' + params);
         const data = await res.json();
 
         if (!data.success) throw new Error();
 
-        const timings = data.timings;
+        const jadwal = data.jadwal;
+        maghribTime = jadwal.maghrib;
+
+        // Update location display
+        const locText = `${data.lokasi}${data.provinsi ? ', ' + data.provinsi : ''}`;
+        const locP = document.getElementById('jadwal-location');
+        if (locP) locP.textContent = 'Waktu sholat hari ini — ' + locText;
+        const cdLoc = document.getElementById('countdown-location');
+        if (cdLoc && !selectedCityName) cdLoc.textContent = locText;
+
         const now = new Date();
         const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-        // Save Maghrib time for countdown
-        maghribTime = timings.Maghrib;
-
         const prayers = [
-            { name: 'Subuh', time: timings.Subuh, icon: '&#9790;' },
-            { name: 'Dzuhur', time: timings.Dzuhur, icon: '&#9788;' },
-            { name: 'Ashar', time: timings.Ashar, icon: '&#9788;' },
-            { name: 'Maghrib', time: timings.Maghrib, icon: '&#9790;' },
-            { name: 'Isya', time: timings.Isya, icon: '&#9733;' }
+            { name: 'Imsak', time: jadwal.imsak, icon: '&#9789;' },
+            { name: 'Subuh', time: jadwal.subuh, icon: '&#9790;' },
+            { name: 'Terbit', time: jadwal.terbit, icon: '&#9788;' },
+            { name: 'Dhuha', time: jadwal.dhuha, icon: '&#9728;' },
+            { name: 'Dzuhur', time: jadwal.dzuhur, icon: '&#9788;' },
+            { name: 'Ashar', time: jadwal.ashar, icon: '&#9788;' },
+            { name: 'Maghrib', time: jadwal.maghrib, icon: '&#9790;' },
+            { name: 'Isya', time: jadwal.isya, icon: '&#9733;' }
         ];
 
-        // Find next prayer
         let nextIdx = -1;
         for (let i = 0; i < prayers.length; i++) {
             const [h, m] = prayers[i].time.split(':').map(Number);
-            const mins = h * 60 + m;
-            if (mins > currentMinutes) { nextIdx = i; break; }
+            if (h * 60 + m > currentMinutes) { nextIdx = i; break; }
         }
 
         container.innerHTML = prayers.map((p, i) => `
@@ -493,20 +611,12 @@ async function renderPrayerTimes() {
             </div>
         `).join('');
 
-        // Date display (Hijri + Masehi)
-        if (data.date) {
-            const hijri = data.date.hijri;
-            const greg = data.date.gregorian;
-            dateEl.textContent = `${hijri?.day || ''} ${hijri?.month?.en || ''} ${hijri?.year || ''} H / ${greg?.weekday?.en || ''}, ${greg?.day || ''} ${greg?.month?.en || ''} ${greg?.year || ''}`;
-        } else {
-            dateEl.textContent = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-        }
+        if (dateEl) dateEl.textContent = jadwal.tanggal || now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
     } catch (err) {
         console.error('Failed to fetch prayer times:', err);
-        // Fallback: show message
         container.innerHTML = '<div class="prayer-card"><div class="pr-left"><span class="pr-name">Gagal memuat. Periksa koneksi internet.</span></div></div>';
-        dateEl.textContent = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        if (dateEl) dateEl.textContent = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
     }
 }
 
@@ -515,39 +625,15 @@ async function renderPrayerTimes() {
 // ============================================================
 function renderDoas() {
     const doas = [
-        {
-            title: 'Doa Niat Puasa',
-            arabic: '\u0646\u064E\u0648\u064E\u064A\u0652\u062A\u064F \u0635\u064E\u0648\u0652\u0645\u064E \u063A\u064E\u062F\u064D \u0639\u064E\u0646\u0652 \u0623\u064E\u062F\u064E\u0627\u0621\u0650 \u0641\u064E\u0631\u0652\u0636\u0650 \u0634\u064E\u0647\u0652\u0631\u0650 \u0631\u064E\u0645\u064E\u0636\u064E\u0627\u0646\u064E \u0647\u064E\u0630\u064E\u0627 \u0627\u0644\u0633\u064E\u0651\u0646\u064E\u0629\u0650 \u0644\u0650\u0644\u0647\u0650 \u062A\u064E\u0639\u064E\u0627\u0644\u064E\u0649',
-            latin: "Nawaitu shauma ghadin 'an ada-i fardhi syahri ramadhaana haadzas sanati lillahi ta'aala",
-            meaning: 'Saya berniat puasa esok hari untuk menunaikan kewajiban di bulan Ramadan tahun ini karena Allah Ta\'ala.'
-        },
-        {
-            title: 'Doa Buka Puasa',
-            arabic: '\u0627\u064E\u0644\u0644\u0651\u064E\u0647\u064F\u0645\u064E\u0651 \u0644\u064E\u0643\u064E \u0635\u064F\u0645\u0652\u062A\u064F \u0648\u064E\u0639\u064E\u0644\u064E\u0649 \u0631\u0650\u0632\u0652\u0642\u0650\u0643\u064E \u0623\u064E\u0641\u0652\u0637\u064E\u0631\u0652\u062A\u064F \u0628\u0650\u0631\u064E\u062D\u0652\u0645\u064E\u062A\u0650\u0643\u064E \u064A\u064E\u0627 \u0623\u064E\u0631\u0652\u062D\u064E\u0645\u064E \u0627\u0644\u0631\u064E\u0651\u0627\u062D\u0650\u0645\u0650\u064A\u0646\u064E',
-            latin: "Allahumma laka shumtu wa 'ala rizqika afthartu birahmatika ya arhamar rahimin",
-            meaning: 'Ya Allah, untuk-Mu aku berpuasa, dan dengan rezeki-Mu aku berbuka. Dengan rahmat-Mu, wahai Yang Maha Pengasih dari semua yang pengasih.'
-        },
-        {
-            title: 'Doa Setelah Makan',
-            arabic: '\u0627\u064E\u0644\u0652\u062D\u064E\u0645\u0652\u062F\u064F \u0644\u0650\u0644\u0651\u064E\u0647\u0650 \u0627\u0644\u064E\u0651\u0630\u0650\u064A \u0623\u064E\u0637\u0652\u0639\u064E\u0645\u064E\u0646\u064E\u0627 \u0648\u064E\u0633\u064E\u0642\u064E\u0627\u0646\u064E\u0627 \u0648\u064E\u062C\u064E\u0639\u064E\u0644\u064E\u0646\u064E\u0627 \u0645\u064F\u0633\u0652\u0644\u0650\u0645\u0650\u064A\u0646\u064E',
-            latin: "Alhamdulillahilladzi ath'amana wa saqana wa ja'alana muslimin",
-            meaning: 'Segala puji bagi Allah yang telah memberi kami makan dan minum serta menjadikan kami orang-orang Islam.'
-        },
-        {
-            title: 'Doa Lailatul Qadar',
-            arabic: '\u0627\u064E\u0644\u0644\u0651\u064E\u0647\u064F\u0645\u064E\u0651 \u0625\u0650\u0646\u064E\u0651\u0643\u064E \u0639\u064E\u0641\u064F\u0648\u064C\u0651 \u062A\u064F\u062D\u0650\u0628\u064F\u0651 \u0627\u0644\u0652\u0639\u064E\u0641\u0652\u0648\u064E \u0641\u064E\u0627\u0639\u0652\u0641\u064F \u0639\u064E\u0646\u064E\u0651\u0627',
-            latin: "Allahumma innaka 'afuwwun tuhibbul 'afwa fa'fu 'anna",
-            meaning: 'Ya Allah, sesungguhnya Engkau Maha Pemaaf, Engkau menyukai maaf, maka maafkanlah kami.'
-        },
-        {
-            title: 'Doa Qunut (Witir)',
-            arabic: '\u0627\u064E\u0644\u0644\u0651\u064E\u0647\u064F\u0645\u064E\u0651 \u0627\u0647\u0652\u062F\u0650\u0646\u064E\u0627 \u0641\u0650\u064A\u0645\u064E\u0646\u0652 \u0647\u064E\u062F\u064E\u064A\u0652\u062A\u064E \u0648\u064E\u0639\u064E\u0627\u0641\u0650\u0646\u064E\u0627 \u0641\u0650\u064A\u0645\u064E\u0646\u0652 \u0639\u064E\u0627\u0641\u064E\u064A\u0652\u062A\u064E',
-            latin: "Allahummahdina fiman hadait, wa 'afina fiman 'afait",
-            meaning: 'Ya Allah, berilah kami petunjuk di antara orang yang Engkau beri petunjuk, dan berilah kami keselamatan di antara orang yang Engkau beri keselamatan.'
-        }
+        { title: 'Doa Niat Puasa', arabic: '\u0646\u064E\u0648\u064E\u064A\u0652\u062A\u064F \u0635\u064E\u0648\u0652\u0645\u064E \u063A\u064E\u062F\u064D \u0639\u064E\u0646\u0652 \u0623\u064E\u062F\u064E\u0627\u0621\u0650 \u0641\u064E\u0631\u0652\u0636\u0650 \u0634\u064E\u0647\u0652\u0631\u0650 \u0631\u064E\u0645\u064E\u0636\u064E\u0627\u0646\u064E \u0647\u064E\u0630\u064E\u0627 \u0627\u0644\u0633\u064E\u0651\u0646\u064E\u0629\u0650 \u0644\u0650\u0644\u0647\u0650 \u062A\u064E\u0639\u064E\u0627\u0644\u064E\u0649', latin: "Nawaitu shauma ghadin 'an ada-i fardhi syahri ramadhaana haadzas sanati lillahi ta'aala", meaning: 'Saya berniat puasa esok hari untuk menunaikan kewajiban di bulan Ramadan tahun ini karena Allah Ta\'ala.' },
+        { title: 'Doa Buka Puasa', arabic: '\u0627\u064E\u0644\u0644\u0651\u064E\u0647\u064F\u0645\u064E\u0651 \u0644\u064E\u0643\u064E \u0635\u064F\u0645\u0652\u062A\u064F \u0648\u064E\u0639\u064E\u0644\u064E\u0649 \u0631\u0650\u0632\u0652\u0642\u0650\u0643\u064E \u0623\u064E\u0641\u0652\u0637\u064E\u0631\u0652\u062A\u064F \u0628\u0650\u0631\u064E\u062D\u0652\u0645\u064E\u062A\u0650\u0643\u064E \u064A\u064E\u0627 \u0623\u064E\u0631\u0652\u062D\u064E\u0645\u064E \u0627\u0644\u0631\u064E\u0651\u0627\u062D\u0650\u0645\u0650\u064A\u0646\u064E', latin: "Allahumma laka shumtu wa 'ala rizqika afthartu birahmatika ya arhamar rahimin", meaning: 'Ya Allah, untuk-Mu aku berpuasa, dan dengan rezeki-Mu aku berbuka. Dengan rahmat-Mu, wahai Yang Maha Pengasih dari semua yang pengasih.' },
+        { title: 'Doa Setelah Makan', arabic: '\u0627\u064E\u0644\u0652\u062D\u064E\u0645\u0652\u062F\u064F \u0644\u0650\u0644\u0651\u064E\u0647\u0650 \u0627\u0644\u064E\u0651\u0630\u0650\u064A \u0623\u064E\u0637\u0652\u0639\u064E\u0645\u064E\u0646\u064E\u0627 \u0648\u064E\u0633\u064E\u0642\u064E\u0627\u0646\u064E\u0627 \u0648\u064E\u062C\u064E\u0639\u064E\u0644\u064E\u0646\u064E\u0627 \u0645\u064F\u0633\u0652\u0644\u0650\u0645\u0650\u064A\u0646\u064E', latin: "Alhamdulillahilladzi ath'amana wa saqana wa ja'alana muslimin", meaning: 'Segala puji bagi Allah yang telah memberi kami makan dan minum serta menjadikan kami orang-orang Islam.' },
+        { title: 'Doa Lailatul Qadar', arabic: '\u0627\u064E\u0644\u0644\u0651\u064E\u0647\u064F\u0645\u064E\u0651 \u0625\u0650\u0646\u064E\u0651\u0643\u064E \u0639\u064E\u0641\u064F\u0648\u064C\u0651 \u062A\u064F\u062D\u0650\u0628\u064F\u0651 \u0627\u0644\u0652\u0639\u064E\u0641\u0652\u0648\u064E \u0641\u064E\u0627\u0639\u0652\u0641\u064F \u0639\u064E\u0646\u064E\u0651\u0627', latin: "Allahumma innaka 'afuwwun tuhibbul 'afwa fa'fu 'anna", meaning: 'Ya Allah, sesungguhnya Engkau Maha Pemaaf, Engkau menyukai maaf, maka maafkanlah kami.' },
+        { title: 'Doa Qunut (Witir)', arabic: '\u0627\u064E\u0644\u0644\u0651\u064E\u0647\u064F\u0645\u064E\u0651 \u0627\u0647\u0652\u062F\u0650\u0646\u064E\u0627 \u0641\u0650\u064A\u0645\u064E\u0646\u0652 \u0647\u064E\u062F\u064E\u064A\u0652\u062A\u064E \u0648\u064E\u0639\u064E\u0627\u0641\u0650\u0646\u064E\u0627 \u0641\u0650\u064A\u0645\u064E\u0646\u0652 \u0639\u064E\u0627\u0641\u064E\u064A\u0652\u062A\u064E', latin: "Allahummahdina fiman hadait, wa 'afina fiman 'afait", meaning: 'Ya Allah, berilah kami petunjuk di antara orang yang Engkau beri petunjuk, dan berilah kami keselamatan di antara orang yang Engkau beri keselamatan.' }
     ];
 
-    document.getElementById('doa-list').innerHTML = doas.map(d => `
+    const el = document.getElementById('doa-list');
+    if (el) el.innerHTML = doas.map(d => `
         <div class="doa-card">
             <div class="doa-title">${d.title}</div>
             <div class="doa-arabic">${d.arabic}</div>
@@ -565,42 +651,68 @@ const HARGA_EMAS_PER_GRAM = 1_500_000;
 const NISAB = NISAB_EMAS_GRAM * HARGA_EMAS_PER_GRAM;
 const ZAKAT_RATE = 0.025;
 
+// Tab switcher for Zakat
+window.switchZakatTab = function(tab) {
+    document.querySelectorAll('.zakat-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('#page-zakat .tab-c').forEach(c => c.classList.remove('active'));
+    if (tab === 'mal') {
+        document.querySelectorAll('.zakat-tabs .tab-btn')[0]?.classList.add('active');
+        document.getElementById('tab-zakat-mal')?.classList.add('active');
+    } else {
+        document.querySelectorAll('.zakat-tabs .tab-btn')[1]?.classList.add('active');
+        document.getElementById('tab-zakat-fitrah')?.classList.add('active');
+    }
+};
+
 window.calculateZakat = function() {
-    const harta = parseFloat(document.getElementById('zakat-harta').value) || 0;
-    const hutang = parseFloat(document.getElementById('zakat-hutang').value) || 0;
+    const hargasBeras = document.getElementById('zakat-harta')?.value.replace(/\./g, '');
+    const harta = parseFloat(hargasBeras) || 0;
+    const utangInput = document.getElementById('zakat-hutang')?.value.replace(/\./g, '');
+    const hutang = parseFloat(utangInput) || 0;
     const bersih = harta - hutang;
     const result = document.getElementById('zakat-result');
+    if (!result) return;
     if (harta <= 0) { showToast('Masukkan jumlah harta'); return; }
     result.classList.remove('hidden');
     if (bersih < NISAB) {
         result.innerHTML = `<div class="zr-label">Status Zakat</div><div class="zr-value" style="-webkit-text-fill-color:var(--t2);font-size:1.2rem;">Belum Wajib Zakat</div><div class="zr-note">Harta bersih Anda (Rp ${fmt(bersih)}) belum mencapai nisab (Rp ${fmt(NISAB)}).</div>`;
     } else {
         const zakatAmt = Math.ceil(bersih * ZAKAT_RATE);
-        result.innerHTML = `<div class="zr-label">Zakat yang Harus Dibayar</div><div class="zr-value">Rp ${fmt(zakatAmt)}</div><div class="zr-note">2,5% x Rp ${fmt(bersih)} (harta bersih)</div><button class="btn btn-mayar" id="btn-pay-zakat" onclick="payZakatMayar(${zakatAmt})">Bayar Zakat Rp ${fmt(zakatAmt)}</button>`;
+        result.innerHTML = `<div class="zr-label">Zakat yang Harus Dibayar</div><div class="zr-value">Rp ${fmt(zakatAmt)}</div><div class="zr-note">2,5% x Rp ${fmt(bersih)} (harta bersih)</div><button class="btn btn-mayar" id="btn-pay-zakat" onclick="payZakatMayar(${zakatAmt},'Zakat Mal')">Bayar Zakat Rp ${fmt(zakatAmt)}</button>`;
     }
 };
 
-window.payZakatMayar = async function(amount) {
-    const btn = document.getElementById('btn-pay-zakat');
+// Zakat Fitrah
+window.calculateZakatFitrah = function() {
+    const jiwa = parseInt(document.getElementById('zakat-jiwa')?.value) || 1;
+    const hb = document.getElementById('zakat-beras')?.value.replace(/\./g, '');
+    const hargaBeras = parseFloat(hb) || 15000;
+    const beratPerJiwa = 2.5; // kg
+    const total = Math.ceil(jiwa * beratPerJiwa * hargaBeras);
+    const result = document.getElementById('zakat-fitrah-result');
+    if (!result) return;
+    if (jiwa <= 0) { showToast('Masukkan jumlah jiwa'); return; }
+    result.classList.remove('hidden');
+    result.innerHTML = `<div class="zr-label">Zakat Fitrah yang Harus Dibayar</div><div class="zr-value">Rp ${fmt(total)}</div><div class="zr-note">${jiwa} jiwa x ${beratPerJiwa} kg x Rp ${fmt(hargaBeras)}/kg</div><button class="btn btn-mayar" id="btn-pay-zakat-fitrah" onclick="payZakatMayar(${total},'Zakat Fitrah')">Bayar Zakat Fitrah Rp ${fmt(total)}</button>`;
+};
+
+window.payZakatMayar = async function(amount, zakatType) {
+    const btnId = zakatType === 'Zakat Fitrah' ? 'btn-pay-zakat-fitrah' : 'btn-pay-zakat';
+    const btn = document.getElementById(btnId);
     if (!btn) return;
     btn.textContent = 'Memproses...'; btn.disabled = true; btn.style.opacity = '.7';
     try {
-        const res = await fetch('/api/pay', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ payerName: 'Pembayar Zakat', amount, description: 'Pembayaran Zakat Mal' }) });
+        const res = await fetch('/api/pay', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ payerName: 'Pembayar ' + zakatType, amount, description: 'Pembayaran ' + zakatType }) });
         const r = await res.json();
         if (r.success && r.link) {
-            localStorage.setItem('splitbill_pending_pay', JSON.stringify({ name: 'Zakat Mal', amount, time: Date.now() }));
+            localStorage.setItem('splitbill_pending_pay', JSON.stringify({ name: zakatType, amount, time: Date.now() }));
             btn.textContent = 'Link Siap'; btn.style.opacity = '1';
             btn.style.background = 'linear-gradient(135deg,#10b981,#059669)';
             window.open(r.link, '_blank');
             const onReturn = () => {
                 if (document.visibilityState === 'visible') {
                     document.removeEventListener('visibilitychange', onReturn);
-                    setTimeout(() => {
-                        showPaymentSuccessModal('Zakat Mal', amount);
-                        btn.textContent = 'Sudah Dibayar';
-                        btn.disabled = true;
-                        localStorage.removeItem('splitbill_pending_pay');
-                    }, 800);
+                    setTimeout(() => { showPaymentSuccessModal(zakatType, amount); btn.textContent = 'Sudah Dibayar'; btn.disabled = true; localStorage.removeItem('splitbill_pending_pay'); }, 800);
                 }
             };
             document.addEventListener('visibilitychange', onReturn);
@@ -608,7 +720,7 @@ window.payZakatMayar = async function(amount) {
         } else throw new Error();
     } catch (e) {
         btn.textContent = 'Gagal - Coba Lagi'; btn.style.opacity = '1'; btn.disabled = false;
-        btn.onclick = () => payZakatMayar(amount);
+        btn.onclick = () => payZakatMayar(amount, zakatType);
         showToast('Gagal membuat link pembayaran');
     }
 };
@@ -626,3 +738,504 @@ function fmt(n) { return Math.round(n).toLocaleString('id-ID'); }
 function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 function escJs(s) { return s.replace(/'/g, "\\'").replace(/"/g, '\\"'); }
 function sanitize(s) { return s.replace(/[^a-zA-Z0-9]/g, '_'); }
+
+// ===== ARAH KIBLAT =====
+let kiblatInitialized = false;
+function initKiblat() {
+    if (kiblatInitialized) return;
+    kiblatInitialized = true;
+    const degreesEl = document.getElementById('kiblat-degrees');
+    
+    if (!navigator.geolocation) {
+        degreesEl.textContent = 'Perangkat tidak mendukung geolokasi';
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition((pos) => {
+        const lat = pos.coords.latitude * Math.PI / 180;
+        const lon = pos.coords.longitude * Math.PI / 180;
+        const kaabaLat = 21.4225 * Math.PI / 180;
+        const kaabaLon = 39.8262 * Math.PI / 180;
+        const dLon = kaabaLon - lon;
+        const y = Math.sin(dLon) * Math.cos(kaabaLat);
+        const x = Math.cos(lat) * Math.sin(kaabaLat) - Math.sin(lat) * Math.cos(kaabaLat) * Math.cos(dLon);
+        let qiblaDeg = Math.atan2(y, x) * 180 / Math.PI;
+        qiblaDeg = (qiblaDeg + 360) % 360;
+        
+        degreesEl.textContent = `Arah Kiblat: ${qiblaDeg.toFixed(1)}° dari Utara`;
+
+        const arrow = document.getElementById('compass-arrow');
+        const compass = document.getElementById('compass');
+
+        function handleOrientation(e) {
+            let heading = e.alpha;
+            if (typeof e.webkitCompassHeading !== 'undefined') heading = e.webkitCompassHeading;
+            else heading = 360 - heading;
+            
+            if (compass) compass.style.transform = `rotate(${-heading}deg)`;
+            if (arrow) arrow.style.transform = `rotate(${qiblaDeg - heading}deg)`;
+        }
+
+        if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+            const infoBox = document.querySelector('.kiblat-info-box');
+            const permBtn = document.createElement('button');
+            permBtn.className = 'btn btn-primary btn-block';
+            permBtn.textContent = 'Aktifkan Kompas';
+            permBtn.style.marginTop = '12px';
+            permBtn.onclick = () => {
+                DeviceOrientationEvent.requestPermission().then(r => {
+                    if (r === 'granted') {
+                        window.addEventListener('deviceorientation', handleOrientation, true);
+                        permBtn.remove();
+                    }
+                });
+            };
+            if (infoBox) infoBox.appendChild(permBtn);
+        } else if ('DeviceOrientationEvent' in window) {
+            window.addEventListener('deviceorientation', handleOrientation, true);
+        } else {
+            degreesEl.textContent += ' (kompas tidak tersedia di perangkat ini)';
+        }
+    }, () => {
+        degreesEl.textContent = 'Izinkan akses lokasi untuk menentukan arah kiblat';
+    });
+}
+
+// ===== AL-QURAN & HADITS =====
+let surahListLoaded = false;
+let haditsBookListLoaded = false;
+let currentHaditsPage = 1;
+let currentHaditsBook = '';
+
+function initQuranPage() {
+    if (!surahListLoaded) loadSurahList();
+    if (!haditsBookListLoaded) loadHaditsBookList();
+}
+
+// ----- QURAN: Load surah list -----
+async function loadSurahList() {
+    const select = document.getElementById('surah-select');
+    if (!select) return;
+    try {
+        const res = await fetch('/api/quran/surat');
+        const data = await res.json();
+        if (data.code === 200 && data.data) {
+            data.data.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.nomor;
+                opt.textContent = `${s.nomor}. ${s.namaLatin} (${s.nama}) — ${s.jumlahAyat} ayat`;
+                select.appendChild(opt);
+            });
+            surahListLoaded = true;
+        }
+    } catch {
+        select.innerHTML = '<option value="">Gagal memuat daftar surah</option>';
+    }
+}
+
+// ----- QURAN: Load surah detail -----
+let currentSurahData = null;
+let currentAyatPage = 1;
+const AYAT_PER_PAGE = 10;
+
+function stripHtml(html) {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html || '';
+    return tmp.textContent || tmp.innerText || '';
+}
+
+window.loadSurahDetail = async function(nomor) {
+    const el = document.getElementById('surah-content');
+    if (!nomor || !el) return;
+    el.innerHTML = '<div class="quran-loading">Memuat surah...</div>';
+    try {
+        const res = await fetch(`/api/quran/surat/${nomor}`);
+        const data = await res.json();
+        if (data.code === 200 && data.data) {
+            currentSurahData = data.data;
+            currentAyatPage = 1;
+            renderSurahPage();
+        } else throw new Error();
+    } catch {
+        el.innerHTML = '<p style="text-align:center;color:var(--t3);padding:32px 0">Gagal memuat surah. Periksa koneksi internet.</p>';
+    }
+};
+
+function renderSurahPage() {
+    const el = document.getElementById('surah-content');
+    const s = currentSurahData;
+    if (!el || !s) return;
+    
+    const totalAyat = s.ayat.length;
+    const totalPages = Math.ceil(totalAyat / AYAT_PER_PAGE);
+    const start = (currentAyatPage - 1) * AYAT_PER_PAGE;
+    const end = Math.min(start + AYAT_PER_PAGE, totalAyat);
+    const pageAyats = s.ayat.slice(start, end);
+    
+    let html = '';
+    
+    // Show header on first page only
+    if (currentAyatPage === 1) {
+        const cleanDesc = stripHtml(s.deskripsi);
+        html += `
+            <div class="surah-header">
+                <div class="surah-title">${esc(s.namaLatin)}</div>
+                <div class="surah-nama-arab">${s.nama}</div>
+                <div class="surah-info">${esc(s.arti)} · ${esc(s.tempatTurun)} · ${s.jumlahAyat} Ayat</div>
+                <p class="surah-desc">${cleanDesc.substring(0, 300)}${cleanDesc.length > 300 ? '...' : ''}</p>
+            </div>
+        `;
+    }
+    
+    // Ayat navigation header
+    if (totalPages > 1) {
+        html += `<div class="ayat-page-header">Ayat ${start + 1}–${end} dari ${totalAyat}</div>`;
+    }
+    
+    // Render ayats
+    pageAyats.forEach(a => {
+        html += `
+            <div class="ayat-card">
+                <div class="ayat-number">${a.nomorAyat}</div>
+                <div class="ayat-body">
+                    <div class="ayat-arab">${a.teksArab}</div>
+                    <div class="ayat-latin">${esc(a.teksLatin)}</div>
+                    <div class="ayat-indo">${esc(a.teksIndonesia)}</div>
+                </div>
+            </div>
+        `;
+    });
+    
+    // Pagination
+    if (totalPages > 1) {
+        html += '<div class="ayat-pagination">';
+        if (currentAyatPage > 1) {
+            html += `<button class="btn btn-outline btn-sm" onclick="goAyatPage(${currentAyatPage - 1})">← Sebelumnya</button>`;
+        }
+        html += `<span class="ayat-page-info">Halaman ${currentAyatPage} / ${totalPages}</span>`;
+        if (currentAyatPage < totalPages) {
+            html += `<button class="btn btn-outline btn-sm" onclick="goAyatPage(${currentAyatPage + 1})">Selanjutnya →</button>`;
+        }
+        html += '</div>';
+    }
+    
+    el.innerHTML = html;
+}
+
+window.goAyatPage = function(page) {
+    currentAyatPage = page;
+    renderSurahPage();
+    const el = document.getElementById('surah-content');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+
+// ----- HADITS: Load book list -----
+async function loadHaditsBookList() {
+    const select = document.getElementById('hadits-book-select');
+    if (!select) return;
+    try {
+        const res = await fetch('/api/hadith/books');
+        const data = await res.json();
+        if (data.success && data.data) {
+            data.data.forEach(b => {
+                const opt = document.createElement('option');
+                opt.value = b.id;
+                opt.dataset.total = b.total;
+                opt.textContent = `${b.name} (${b.total.toLocaleString('id-ID')} hadits)`;
+                select.appendChild(opt);
+            });
+            haditsBookListLoaded = true;
+        }
+    } catch {
+        select.innerHTML = '<option value="">Gagal memuat daftar kitab</option>';
+    }
+}
+
+// ----- HADITS: Load page of hadiths -----
+window.loadHaditsPage = async function(page) {
+    const select = document.getElementById('hadits-book-select');
+    const content = document.getElementById('hadits-content');
+    const nav = document.getElementById('hadits-nav');
+    if (!select || !content) return;
+    
+    const bookId = select.value;
+    if (!bookId) return;
+    
+    const selectedOpt = select.options[select.selectedIndex];
+    const totalHadits = parseInt(selectedOpt.dataset.total) || 100;
+    const perPage = 10;
+    currentHaditsPage = page;
+    currentHaditsBook = bookId;
+    
+    const start = (page - 1) * perPage + 1;
+    const end = Math.min(page * perPage, totalHadits);
+    const totalPages = Math.ceil(totalHadits / perPage);
+    
+    content.innerHTML = '<div class="quran-loading">Memuat hadits...</div>';
+    
+    try {
+        const res = await fetch(`/api/hadith/${bookId}?range=${start}-${end}`);
+        const data = await res.json();
+        if (data.code === 200 && data.data) {
+            const hadiths = data.data.hadiths;
+            let html = `<div class="hadits-book-header">${esc(data.data.name)} — Halaman ${page} dari ${totalPages}</div>`;
+            
+            hadiths.forEach(h => {
+                html += `
+                    <div class="hadits-item">
+                        <div class="hadits-num">Hadits No. ${h.number}</div>
+                        <div class="hadits-arab-text">${h.arab}</div>
+                        <div class="hadits-indo-text">${esc(h.id)}</div>
+                    </div>
+                `;
+            });
+            
+            content.innerHTML = html;
+            
+            // Pagination nav
+            let navHtml = '';
+            if (page > 1) {
+                navHtml += `<button class="btn btn-outline btn-sm" onclick="loadHaditsPage(${page - 1})">← Sebelumnya</button>`;
+            }
+            navHtml += `<span class="hadits-page-info">${start}–${end} dari ${totalHadits.toLocaleString('id-ID')}</span>`;
+            if (page < totalPages) {
+                navHtml += `<button class="btn btn-outline btn-sm" onclick="loadHaditsPage(${page + 1})">Selanjutnya →</button>`;
+            }
+            if (nav) nav.innerHTML = navHtml;
+            
+            window.scrollTo({ top: content.offsetTop - 80, behavior: 'smooth' });
+        } else throw new Error();
+    } catch {
+        content.innerHTML = '<p style="text-align:center;color:var(--t3);padding:32px 0">Gagal memuat hadits. Periksa koneksi internet.</p>';
+    }
+};
+
+window.switchQuranTab = function(tab) {
+    document.querySelectorAll('#page-quran .tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('#page-quran .tab-c').forEach(c => c.classList.remove('active'));
+    
+    if (tab === 'quran') {
+        document.querySelector('#page-quran .tab-btn:first-child').classList.add('active');
+        document.getElementById('tab-quran').classList.add('active');
+    } else {
+        document.querySelector('#page-quran .tab-btn:last-child').classList.add('active');
+        document.getElementById('tab-hadits').classList.add('active');
+    }
+};
+
+// ============================================================
+// TASBIH DIGITAL
+// ============================================================
+let tasbihData = { count: 0, target: 33, type: 'subhanallah' };
+const dzikirList = {
+    'subhanallah': { arab: 'سُبْحَانَ ٱللَّٰهِ', latin: 'Subhanallah' },
+    'alhamdulillah': { arab: 'ٱلْحَمْدُ لِلَّٰهِ', latin: 'Alhamdulillah' },
+    'allahuakbar': { arab: 'ٱللَّٰهُ أَكْبَرُ', latin: 'Allahu Akbar' },
+    'lailahaillallah': { arab: 'لَا إِلَٰهَ إِلَّا ٱللَّٰهُ', latin: 'Laa Ilaaha Illallah' },
+    'astagfirullah': { arab: 'أَسْتَغْفِرُ ٱللَّٰهَ', latin: 'Astagfirullah' }
+};
+
+function initTasbih() {
+    try { 
+        const saved = localStorage.getItem('srm_tasbih');
+        if (saved) tasbihData = JSON.parse(saved);
+    } catch(e) {}
+    
+    document.getElementById('tasbih-dzikir-select').value = tasbihData.type || 'subhanallah';
+    updateTasbihUI();
+}
+
+window.changeDzikir = function() {
+    const v = document.getElementById('tasbih-dzikir-select').value;
+    tasbihData.type = v;
+    tasbihData.count = 0;
+    saveTasbih();
+    updateTasbihUI();
+};
+
+window.setTasbihTarget = function(t, btn) {
+    tasbihData.target = t;
+    document.querySelectorAll('.tasbih-target-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    saveTasbih();
+    updateTasbihUI();
+}
+
+window.incrementTasbih = function() {
+    tasbihData.count++;
+    if (tasbihData.target > 0 && tasbihData.count === tasbihData.target) {
+        if('vibrate' in navigator) navigator.vibrate([100, 50, 100]);
+        showToast(`Alhamdulillah, target ${tasbihData.target} tercapai`);
+    } else {
+        if('vibrate' in navigator) navigator.vibrate(20);
+    }
+    saveTasbih();
+    updateTasbihUI();
+}
+
+window.resetTasbih = function() {
+    tasbihData.count = 0;
+    saveTasbih();
+    updateTasbihUI();
+}
+
+function saveTasbih() {
+    localStorage.setItem('srm_tasbih', JSON.stringify(tasbihData));
+}
+
+function updateTasbihUI() {
+    const d = dzikirList[tasbihData.type];
+    if (d) {
+        document.getElementById('tasbih-arab').textContent = d.arab;
+        document.getElementById('tasbih-latin').textContent = d.latin;
+    }
+    document.getElementById('tasbih-count').textContent = tasbihData.count;
+    document.getElementById('tasbih-target-text').textContent = tasbihData.target === 0 ? 'Tak Terbatas' : tasbihData.target;
+    
+    let pct = 0;
+    if (tasbihData.target > 0) {
+        pct = (tasbihData.count / tasbihData.target) * 100;
+        if (pct > 100) pct = 100;
+    }
+    document.getElementById('tasbih-progress-bar').style.width = pct + '%';
+    
+    // update target buttons
+    document.querySelectorAll('.tasbih-target-btn').forEach(b => {
+        b.classList.remove('active');
+        if (parseInt(b.textContent) === tasbihData.target || (b.textContent === 'Tak Terbatas' && tasbihData.target === 0)) {
+            b.classList.add('active');
+        }
+    });
+}
+
+// ============================================================
+// KALENDER HIJRIYAH
+// ============================================================
+let calCurrentYear = new Date().getFullYear();
+let calCurrentMonth = new Date().getMonth() + 1;
+
+async function initKalender() {
+    renderKalenderContainer();
+}
+
+window.prevMonth = function() {
+    calCurrentMonth--;
+    if (calCurrentMonth < 1) { calCurrentMonth = 12; calCurrentYear--; }
+    renderKalenderContainer();
+}
+
+window.nextMonth = function() {
+    calCurrentMonth++;
+    if (calCurrentMonth > 12) { calCurrentMonth = 1; calCurrentYear++; }
+    renderKalenderContainer();
+}
+
+async function renderKalenderContainer() {
+    const grid = document.getElementById('cal-days-grid');
+    const monthName = document.getElementById('cal-month');
+    const yearText = document.getElementById('cal-year');
+    if (!grid) return;
+    
+    const d = new Date(calCurrentYear, calCurrentMonth - 1, 1);
+    monthName.textContent = d.toLocaleString('id-ID', { month: 'long' });
+    yearText.textContent = calCurrentYear;
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--t3);">Memuat data...</div>';
+    
+    try {
+        const res = await fetch(`/api/kalender/${calCurrentYear}/${calCurrentMonth}`);
+        const result = await res.json();
+        
+        if (result.status && result.data) {
+            const daysInMonth = new Date(calCurrentYear, calCurrentMonth, 0).getDate();
+            const firstDayIndex = d.getDay(); // 0 is Sunday
+            
+            let html = '';
+            for (let i = 0; i < firstDayIndex; i++) {
+                html += '<div class="calendar-day empty"></div>';
+            }
+            
+            const today = new Date();
+            let todayHijri = null;
+            let eventsHtml = '';
+            
+            // Note: API myquran v3 kalender endpoint returns data array? Hmm actually myquran calendar API returns data per day or per month depending on endpoint.
+            // Wait, their kalender is usually not an array of months but we will see. If it fails, fallback gracefully 
+            // the proxy gets /api/kalender/2026/03
+            // Assuming result.data is an array or object of dates
+            
+            let dataArr = [];
+            if (Array.isArray(result.data)) dataArr = result.data;
+            else if (result.data.jadwal) dataArr = result.data.jadwal;
+            else dataArr = Object.values(result.data); // fallback objects
+
+            for (let i = 1; i <= daysInMonth; i++) {
+                const theDateStr = `${calCurrentYear}-${String(calCurrentMonth).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
+                const isToday = (i === today.getDate() && calCurrentMonth === (today.getMonth()+1) && calCurrentYear === today.getFullYear());
+                
+                // Usually `date` property exists
+                let hariData = dataArr.find(x => x && String(x.date).includes(theDateStr)) || {};
+                
+                html += `<div class="calendar-day ${isToday ? 'today' : ''}" title="${hariData.date || i}">${i}</div>`;
+                
+                if (isToday) todayHijri = hariData;
+            }
+            grid.innerHTML = html;
+            
+            // Very hacky display of hijri date based on API response structure differences
+            if (todayHijri && todayHijri.date) {
+                document.getElementById('cal-today-hijri').innerHTML = `
+                    <div class="calendar-hijri-date">${todayHijri.hijri || todayHijri.tanggal || "Kalender API"}</div>
+                    <div class="calendar-masehi-date">${new Date().toLocaleDateString('id-ID', {weekday:'long', year:'numeric', month:'long', day:'numeric'})}</div>
+                `;
+            } else {
+                document.getElementById('cal-today-hijri').innerHTML = `
+                    <div class="calendar-hijri-date">${new Date().toLocaleDateString('id-ID', {weekday:'long', year:'numeric', month:'long', day:'numeric'})}</div>
+                    <div class="calendar-masehi-date">Kalender Islam ditampilkan jika tersedia.</div>
+                `;
+            }
+            
+        } else throw new Error();
+    } catch (e) {
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--t3);">Gagal memuat API Kalender</div>';
+    }
+}
+
+// ============================================================
+// REALTIME CURRENCY FORMATTER
+// ============================================================
+function formatCurrencyInput(val) {
+    if (!val) return "";
+    let numberString = val.replace(/[^,\d]/g, '').toString();
+    const split = numberString.split(',');
+    let sisa = split[0].length % 3;
+    let rupiah = split[0].substr(0, sisa);
+    let ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+    
+    if (ribuan) {
+        let separator = sisa ? '.' : '';
+        rupiah += separator + ribuan.join('.');
+    }
+    rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
+    return rupiah;
+}
+
+// Make real-time format for anything with class `currency-input`
+document.addEventListener('input', function(e) {
+    if(e.target && e.target.classList.contains('c-input')) {
+        const rawString = e.target.value.replace(/\./g, '');
+        e.target.dataset.val = rawString;
+        e.target.value = formatCurrencyInput(rawString);
+    }
+});
+
+
+// ===== ENHANCED SWITCH PAGE (add kiblat, quran, tasbih, kalender triggers) =====
+const _origSwitchPage = window.switchPage;
+window.switchPage = function(page) {
+    _origSwitchPage(page);
+    if (page === 'kiblat') initKiblat();
+    if (page === 'quran') initQuranPage();
+    if (page === 'tasbih') initTasbih();
+    if (page === 'kalender') initKalender();
+};
+

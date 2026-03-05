@@ -3,23 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>SplitBill Bukber — Ramadan Companion</title>
-    <meta name="description" content="Patungan buka puasa cerdas + jadwal sholat, doa harian, kalkulator zakat. Semua kebutuhan Ramadan dalam satu aplikasi.">
-    <meta name="keywords" content="split bill, patungan bukber, buka puasa, Ramadan 2026, bayar online, scan struk, jadwal sholat, doa ramadan, kalkulator zakat">
+    <title>Sahabat Ramadan — Teman Ibadahmu di Bulan Suci | Ketsar Ali</title>
+    <meta name="description" content="Patungan bukber cerdas, jadwal sholat Kemenag RI, arah kiblat, doa harian, kalkulator zakat, Al-Quran & hadits. Semua kebutuhan Ramadan dalam satu aplikasi.">
+    <meta name="keywords" content="sahabat ramadan, patungan bukber, jadwal sholat, arah kiblat, doa ramadan, kalkulator zakat, al-quran, hadits, Ramadan 2026">
     <meta name="author" content="Muhammad Ketsar Ali Abi Wahid">
     <meta name="robots" content="index, follow">
     <meta property="og:type" content="website">
-    <meta property="og:title" content="SplitBill Bukber — Ramadan Companion">
-    <meta property="og:description" content="Patungan buka puasa + jadwal sholat + doa harian + kalkulator zakat. Satu app untuk Ramadan.">
-    <meta property="og:site_name" content="SplitBill Bukber">
+    <meta property="og:title" content="Sahabat Ramadan — Teman Ibadahmu di Bulan Suci">
+    <meta property="og:description" content="Patungan bukber + jadwal sholat + arah kiblat + doa harian + kalkulator zakat + Al-Quran & hadits. Satu aplikasi untuk Ramadan.">
+    <meta property="og:site_name" content="Sahabat Ramadan">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect rx='20' width='100' height='100' fill='%231e1b4b'/><text x='50' y='68' font-size='55' text-anchor='middle'>🌙</text></svg>">
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="apple-touch-icon" href="favicon.png">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#030014">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -32,7 +32,7 @@
         <nav class="top-bar">
             <div class="brand">
                 <span class="brand-icon">&#127769;</span>
-                <span class="brand-text">SplitBill <span class="brand-accent">Bukber</span></span>
+                <span class="brand-text">Sahabat <span class="brand-accent">Ramadan</span></span>
             </div>
             <div class="nav-actions">
                 <button class="btn-icon" onclick="toggleThemePanel()" title="Tema"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></button>
@@ -44,20 +44,88 @@
         <div class="countdown-bar" id="countdown-bar">
             <span class="cd-label">Menuju Buka Puasa</span>
             <span class="cd-timer" id="countdown-timer">--:--:--</span>
-            <span class="cd-loc" id="countdown-location">Jakarta (WIB)</span>
+            <span class="cd-loc" id="countdown-location">Memuat lokasi...</span>
         </div>
 
-        <!-- ===================== PAGE: SPLIT BILL ===================== -->
-        <div id="page-split" class="page active">
-            <!-- Hero -->
+        <!-- ===================== PAGE: HOME ===================== -->
+        <div id="page-home" class="page active">
             <header class="hero" id="hero-section">
-                <h1>Patungan Bukber<br><span class="gradient-text">Jadi Gampang!</span></h1>
-                <p class="hero-sub">Scan struk, bagi adil, bayar instan. Semua dalam satu langkah.</p>
+                <h1>Sahabat<br><span class="gradient-text">Ramadan</span></h1>
+                <p class="hero-sub">Teman ibadahmu di bulan suci. Pilih fitur yang kamu butuhkan.</p>
             </header>
 
-            <!-- Progress -->
+            <div class="home-grid">
+                <div class="home-card" onclick="switchPage('split')">
+                    <div class="hc-icon">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 10h20M10 4v16"/></svg>
+                    </div>
+                    <h3>Patungan Bukber</h3>
+                    <p>Bagi tagihan buka puasa dengan cerdas pakai AI</p>
+                </div>
+                <div class="home-card" onclick="switchPage('jadwal')">
+                    <div class="hc-icon">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                    </div>
+                    <h3>Jadwal Sholat</h3>
+                    <p>Waktu sholat akurat dari Kemenag RI</p>
+                </div>
+                <div class="home-card" onclick="switchPage('doa')">
+                    <div class="hc-icon">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+                    </div>
+                    <h3>Doa Harian</h3>
+                    <p>Kumpulan doa penting selama Ramadan</p>
+                </div>
+                <div class="home-card" onclick="switchPage('zakat')">
+                    <div class="hc-icon">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 000-7.78z"/></svg>
+                    </div>
+                    <h3>Kalkulator Zakat</h3>
+                    <p>Hitung zakat mal dan fitrah, bayar via Mayar</p>
+                </div>
+                <div class="home-card" onclick="switchPage('kiblat')">
+                    <div class="hc-icon">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 19 21 12 17 5 21"/></svg>
+                    </div>
+                    <h3>Arah Kiblat</h3>
+                    <p>Kompas kiblat langsung dari perangkatmu</p>
+                </div>
+                <div class="home-card" onclick="switchPage('quran')">
+                    <div class="hc-icon">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+                    </div>
+                    <h3>Al-Quran & Hadits</h3>
+                    <p>Baca ayat suci dan pelajari hadits pilihan</p>
+                </div>
+                <div class="home-card" onclick="switchPage('tasbih')">
+                    <div class="hc-icon">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="9"/><line x1="12" y1="15" x2="12" y2="22"/></svg>
+                    </div>
+                    <h3>Tasbih Digital</h3>
+                    <p>Berdzikir kapan saja dan di mana saja</p>
+                </div>
+                <div class="home-card" onclick="switchPage('kalender')">
+                    <div class="hc-icon">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    </div>
+                    <h3>Kalender Hijriyah</h3>
+                    <p>Tanggal Masehi dan kalender Islam</p>
+                </div>
+                <div class="home-card" onclick="switchPage('thr')">
+                    <div class="hc-icon">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
+                    </div>
+                    <h3>Bagi THR / Hampers</h3>
+                    <p>Patungan THR dan saling berbagi di hari Lebaran</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===================== HALAMAN: PATUNGAN BUKBER ===================== -->
+        <div id="page-split" class="page">
+            <!-- Langkah -->
             <div class="progress-bar">
-                <div class="p-step active" data-step="1"><div class="p-circle">1</div><span>Input</span></div>
+                <div class="p-step active" data-step="1"><div class="p-circle">1</div><span>Masukkan</span></div>
                 <div class="p-line"><div class="p-fill" id="pf-1"></div></div>
                 <div class="p-step" data-step="2"><div class="p-circle">2</div><span>Bagi</span></div>
                 <div class="p-line"><div class="p-fill" id="pf-2"></div></div>
@@ -96,7 +164,7 @@
                         <div class="manual-entry">
                             <div class="m-row">
                                 <input type="text" id="manual-item-name" placeholder="Nama item">
-                                <input type="number" id="manual-item-price" placeholder="Harga" min="0" step="500">
+                                <input type="text" id="manual-item-price" class="c-input" inputmode="numeric" placeholder="Harga" min="0">
                                 <button class="btn btn-accent btn-sq" onclick="addManualItem()">+</button>
                             </div>
                             <div id="manual-items-preview"></div>
@@ -124,7 +192,9 @@
                         <div class="add-inline">
                             <button class="btn btn-ghost btn-sm" onclick="showAddItemInline()">+ Tambah Item</button>
                             <div id="inline-add-form" class="hidden i-form">
-                                <input type="text" id="inline-item-name" placeholder="Nama"><input type="number" id="inline-item-price" placeholder="Harga" min="0"><button class="btn btn-accent btn-sq" onclick="addInlineItem()">+</button>
+                                <input type="text" id="inline-item-name" placeholder="Nama">
+                                <input type="text" id="inline-item-price" class="c-input" inputmode="numeric" placeholder="Harga" min="0">
+                                <button class="btn btn-accent btn-sq" onclick="addInlineItem()">+</button>
                             </div>
                         </div>
                     </div>
@@ -157,10 +227,18 @@
         <!-- ===================== PAGE: JADWAL SHOLAT ===================== -->
         <div id="page-jadwal" class="page">
             <div class="glass-card">
-                <div class="sec-head"><h2>Jadwal Sholat</h2><p>Waktu sholat hari ini — Jakarta (WIB)</p></div>
-                <div class="date-display" id="hijri-date"></div>
+                <div class="sec-head"><h2>Jadwal Sholat</h2><p id="jadwal-location">Memuat jadwal sholat...</p></div>
+                <!-- City Search -->
+                <div class="city-search">
+                    <div class="search-input-wrapper">
+                        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                        <input type="text" id="city-search-input" placeholder="Cari kota atau kabupaten..." autocomplete="off">
+                    </div>
+                    <div id="city-results" class="city-results hidden"></div>
+                </div>
+                <div class="date-display" id="jadwal-date"></div>
                 <div id="prayer-list" class="prayer-list"></div>
-                <div class="prayer-note">Waktu sholat dihitung berdasarkan koordinat Jakarta. Selisih 1-2 menit mungkin terjadi.</div>
+                <div class="prayer-note">Berdasarkan data resmi Kementerian Agama RI. Perbedaan waktu 1–2 menit dapat terjadi tergantung lokasi.</div>
             </div>
         </div>
 
@@ -175,26 +253,216 @@
         <!-- ===================== PAGE: ZAKAT ===================== -->
         <div id="page-zakat" class="page">
             <div class="glass-card">
-                <div class="sec-head"><h2>Kalkulator Zakat</h2><p>Hitung zakat mal Anda dengan mudah dan bayar langsung.</p></div>
-                <div class="zakat-form">
-                    <div class="zk-field">
-                        <label>Total Harta / Tabungan (Rp)</label>
-                        <input type="number" id="zakat-harta" placeholder="Contoh: 50000000" min="0">
-                    </div>
-                    <div class="zk-field">
-                        <label>Hutang yang Harus Dibayar (Rp)</label>
-                        <input type="number" id="zakat-hutang" value="0" min="0">
-                    </div>
-                    <button class="btn btn-primary btn-block" onclick="calculateZakat()">Hitung Zakat</button>
-                    <div id="zakat-result" class="hidden zakat-result"></div>
+                <div class="sec-head"><h2>Kalkulator Zakat</h2><p>Hitung zakat dan bayar langsung via Mayar.</p></div>
+
+                <!-- Zakat Tab Switcher -->
+                <div class="tab-sw zakat-tabs">
+                    <button class="tab-btn active" onclick="switchZakatTab('mal')">Zakat Mal</button>
+                    <button class="tab-btn" onclick="switchZakatTab('fitrah')">Zakat Fitrah</button>
                 </div>
-                <div class="zakat-info">
-                    <h3>Tentang Zakat Mal</h3>
-                    <div class="info-items">
-                        <div class="info-item"><strong>Nisab</strong><span>Setara 85 gram emas (~Rp 85.000.000)</span></div>
-                        <div class="info-item"><strong>Tarif</strong><span>2,5% dari total harta bersih</span></div>
-                        <div class="info-item"><strong>Syarat</strong><span>Harta dimiliki penuh selama 1 tahun (haul)</span></div>
+
+                <!-- Zakat Mal -->
+                <div id="tab-zakat-mal" class="tab-c active">
+                    <div class="zakat-form">
+                        <div class="zk-field">
+                            <label>Total Harta / Tabungan (Rp)</label>
+                            <input type="text" id="zakat-harta" class="c-input" inputmode="numeric" placeholder="Contoh: 50.000.000">
+                        </div>
+                        <div class="zk-field">
+                            <label>Hutang yang Harus Dibayar (Rp)</label>
+                            <input type="text" id="zakat-hutang" class="c-input" inputmode="numeric" placeholder="Contoh: 0">
+                        </div>
+                        <button class="btn btn-primary btn-block" onclick="calculateZakat()">Hitung Zakat Mal</button>
+                        <div id="zakat-result" class="hidden zakat-result"></div>
                     </div>
+                    <div class="zakat-info">
+                        <h3>Tentang Zakat Mal</h3>
+                        <div class="info-items">
+                            <div class="info-item"><strong>Nisab</strong><span>Setara 85 gram emas (~Rp 85.000.000)</span></div>
+                            <div class="info-item"><strong>Tarif</strong><span>2,5% dari total harta bersih</span></div>
+                            <div class="info-item"><strong>Syarat</strong><span>Harta dimiliki penuh selama 1 tahun (haul)</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Zakat Fitrah -->
+                <div id="tab-zakat-fitrah" class="tab-c">
+                    <div class="zakat-form">
+                        <div class="zk-field">
+                            <label>Jumlah Jiwa (Anggota Keluarga)</label>
+                            <input type="number" id="zakat-jiwa" value="1" min="1" max="50">
+                        </div>
+                        <div class="zk-field">
+                            <label>Harga Beras per Kg (Rp)</label>
+                            <input type="text" id="zakat-beras" class="c-input" inputmode="numeric" value="15.000">
+                        </div>
+                        <button class="btn btn-primary btn-block" onclick="calculateZakatFitrah()">Hitung Zakat Fitrah</button>
+                        <div id="zakat-fitrah-result" class="hidden zakat-result"></div>
+                    </div>
+                    <div class="zakat-info">
+                        <h3>Tentang Zakat Fitrah</h3>
+                        <div class="info-items">
+                            <div class="info-item"><strong>Besaran</strong><span>2,5 kg atau 3,5 liter beras per jiwa</span></div>
+                            <div class="info-item"><strong>Waktu</strong><span>Dibayarkan sebelum sholat Idul Fitri</span></div>
+                            <div class="info-item"><strong>Hukum</strong><span>Wajib bagi setiap muslim yang mampu</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===================== HALAMAN: ARAH KIBLAT ===================== -->
+        <div id="page-kiblat" class="page">
+            <div class="glass-card">
+                <div class="sec-head"><h2>Arah Kiblat</h2><p>Hadapkan perangkatmu ke arah Ka'bah.</p></div>
+                <div class="kiblat-container" id="kiblat-container">
+                    <div class="compass-wrapper">
+                        <div class="compass" id="compass">
+                            <div class="compass-arrow" id="compass-arrow">
+                                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 19 21 12 17 5 21" fill="currentColor" opacity="0.2"/><polygon points="12 2 19 21 12 17 5 21"/></svg>
+                            </div>
+                            <div class="compass-label">Ka'bah</div>
+                        </div>
+                        <p class="kiblat-degrees" id="kiblat-degrees">Menghitung arah...</p>
+                    </div>
+                    <div class="kiblat-info-box">
+                        <p>Pastikan sensor kompas perangkatmu sudah dikalibrasi. Putar perangkat membentuk angka 8 untuk kalibrasi.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===================== HALAMAN: AL-QURAN & HADITS ===================== -->
+        <div id="page-quran" class="page">
+            <div class="glass-card">
+                <div class="sec-head"><h2>Al-Quran & Hadits</h2><p>Baca, pelajari, dan renungi firman Allah serta sabda Rasulullah ﷺ.</p></div>
+                
+                <div class="tab-sw">
+                    <button class="tab-btn active" onclick="switchQuranTab('quran')">Al-Quran</button>
+                    <button class="tab-btn" onclick="switchQuranTab('hadits')">Hadits</button>
+                </div>
+
+                <!-- ===== TAB: AL-QURAN ===== -->
+                <div id="tab-quran" class="tab-c active">
+                    <!-- Surah Selector -->
+                    <div class="quran-controls">
+                        <select id="surah-select" class="quran-select" onchange="loadSurahDetail(this.value)">
+                            <option value="">Pilih Surah...</option>
+                        </select>
+                    </div>
+                    <!-- Surah Content -->
+                    <div id="surah-content">
+                        <div class="quran-placeholder">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" opacity=".3"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+                            <p>Pilih surah di atas untuk mulai membaca</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== TAB: HADITS ===== -->
+                <div id="tab-hadits" class="tab-c">
+                    <div class="hadits-controls">
+                        <select id="hadits-book-select" class="quran-select" onchange="loadHaditsPage(1)">
+                            <option value="">Pilih Kitab Hadits...</option>
+                        </select>
+                        <div class="hadits-nav" id="hadits-nav"></div>
+                    </div>
+                    <div id="hadits-content">
+                        <div class="quran-placeholder">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" opacity=".3"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+                            <p>Pilih kitab hadits untuk mulai membaca</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===================== PAGE: TASBIH ===================== -->
+        <div id="page-tasbih" class="page">
+            <div class="glass-card">
+                <div class="sec-head"><h2>Tasbih Digital</h2><p>Berdzikir kapan saja dan di mana saja.</p></div>
+                <div class="tasbih-container">
+                    <select id="tasbih-dzikir-select" class="tasbih-dzikir-select" onchange="changeDzikir()">
+                        <option value="subhanallah">Subhanallah (Maha Suci Allah)</option>
+                        <option value="alhamdulillah">Alhamdulillah (Segala Puji Bagi Allah)</option>
+                        <option value="allahuakbar">Allahu Akbar (Allah Maha Besar)</option>
+                        <option value="lailahaillallah">Laa Ilaaha Illallah (Tiada Tuhan Selain Allah)</option>
+                        <option value="astagfirullah">Astagfirullah (Aku Mohon Ampun Pada Allah)</option>
+                    </select>
+                    <div id="tasbih-arab" class="tasbih-dzikir-arab">سُبْحَانَ ٱللَّٰهِ</div>
+                    <div id="tasbih-latin" class="tasbih-dzikir-latin">Subhanallah</div>
+                    
+                    <div class="tasbih-target">Target: <span id="tasbih-target-text">33</span></div>
+                    <div class="tasbih-progress"><div class="tasbih-progress-bar" id="tasbih-progress-bar" style="width: 0%"></div></div>
+                    
+                    <div class="tasbih-count" id="tasbih-count">0</div>
+                    
+                    <button class="tasbih-btn" onclick="incrementTasbih()" id="btn-tasbih-click">TAP</button>
+                    
+                    <div class="tasbih-target-btns">
+                        <button class="tasbih-target-btn active" onclick="setTasbihTarget(33, this)">33</button>
+                        <button class="tasbih-target-btn" onclick="setTasbihTarget(99, this)">99</button>
+                        <button class="tasbih-target-btn" onclick="setTasbihTarget(100, this)">100</button>
+                        <button class="tasbih-target-btn" onclick="setTasbihTarget(0, this)">Tak Terbatas</button>
+                    </div>
+                    
+                    <div class="tasbih-actions">
+                        <button class="btn btn-outline btn-sm" onclick="resetTasbih()">Reset</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===================== PAGE: KALENDER ===================== -->
+        <div id="page-kalender" class="page">
+            <div class="glass-card">
+                <div class="sec-head"><h2>Kalender Hijriyah</h2><p>Penanggalan Masehi & Hijriyah.</p></div>
+                
+                <div class="calendar-container">
+                    <div class="calendar-header">
+                        <button class="calendar-nav-btn" onclick="prevMonth()">❮</button>
+                        <div>
+                            <div class="calendar-month-name" id="cal-month">Memuat...</div>
+                            <div class="calendar-year" id="cal-year">-</div>
+                        </div>
+                        <button class="calendar-nav-btn" onclick="nextMonth()">❯</button>
+                    </div>
+                    
+                    <div class="calendar-grid">
+                        <div class="calendar-day-name">Min</div>
+                        <div class="calendar-day-name">Sen</div>
+                        <div class="calendar-day-name">Sel</div>
+                        <div class="calendar-day-name">Rab</div>
+                        <div class="calendar-day-name">Kam</div>
+                        <div class="calendar-day-name">Jum</div>
+                        <div class="calendar-day-name">Sab</div>
+                    </div>
+                    <div class="calendar-grid" id="cal-days-grid">
+                        <!-- Days will be inserted here -->
+                    </div>
+                    
+                    <div class="calendar-hijri-info" id="cal-today-hijri">
+                        <div class="calendar-hijri-date">Memuat kalender...</div>
+                        <div class="calendar-masehi-date">-</div>
+                    </div>
+                    
+                    <div class="calendar-events" id="cal-events">
+                        <!-- Events will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===================== PAGE: BAGI THR ===================== -->
+        <div id="page-thr" class="page">
+            <div class="glass-card">
+                <div class="sec-head"><h2>Bagi THR / Hampers</h2><p>Rayakan Idul Fitri dengan berbagi!</p></div>
+                <div style="text-align:center; padding: 20px 0;">
+                    <img src="https://em-content.zobj.net/source/apple/354/money-with-wings_1f4b8.png" width="80" alt="THR">
+                    <p style="margin: 20px 0; color: var(--t2); line-height: 1.6;">
+                        Aplikasi ini tidak hanya untuk Bukber! Saat Lebaran tiba, Anda bisa membagikan THR atau menggalang dana Hampers untuk keluarga dan teman menggunakan fitur <strong>Patungan</strong>.
+                    </p>
+                    <button class="btn btn-primary" onclick="switchPage('split')">Mulai Bagi THR Sekarang</button>
                 </div>
             </div>
         </div>
@@ -207,13 +475,15 @@
         </div>
         <div class="overlay hidden" id="history-overlay" onclick="toggleHistory()"></div>
 
-        <!-- Theme Panel (bottom sheet) -->
+        <!-- Theme Panel -->
         <div class="bottom-sheet hidden" id="theme-panel">
             <div class="bs-head"><h3>Pilih Tema</h3><button class="btn-icon" onclick="toggleThemePanel()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
             <div class="theme-grid">
-                <button class="theme-opt active" data-theme="dark" onclick="setTheme('dark')"><span class="th-dot dark-dot"></span><span>Dark</span></button>
+                <button class="theme-opt active" data-theme="dark" onclick="setTheme('dark')"><span class="th-dot dark-dot"></span><span>Gelap</span></button>
                 <button class="theme-opt" data-theme="ramadan" onclick="setTheme('ramadan')"><span class="th-dot ramadan-dot"></span><span>Ramadan</span></button>
-                <button class="theme-opt" data-theme="light" onclick="setTheme('light')"><span class="th-dot light-dot"></span><span>Light</span></button>
+                <button class="theme-opt" data-theme="light" onclick="setTheme('light')"><span class="th-dot light-dot"></span><span>Terang</span></button>
+                <button class="theme-opt" data-theme="ocean" onclick="setTheme('ocean')"><span class="th-dot ocean-dot"></span><span>Samudra</span></button>
+                <button class="theme-opt" data-theme="sunset" onclick="setTheme('sunset')"><span class="th-dot sunset-dot"></span><span>Senja</span></button>
             </div>
         </div>
         <div class="overlay hidden" id="theme-overlay" onclick="toggleThemePanel()"></div>
@@ -221,14 +491,18 @@
         <!-- Footer -->
         <footer class="app-footer">
             <p>&copy; 2026 <strong>Muhammad Ketsar Ali Abi Wahid</strong></p>
-            <p class="footer-sub">Crafted for Mayar Vibecoding Competition — Ramadan 2026</p>
+            <p class="footer-sub">Dibuat untuk Kompetisi Vibecoding Mayar — Ramadan 2026</p>
         </footer>
 
         <!-- Bottom Nav -->
         <nav class="bottom-nav" id="bottom-nav">
-            <button class="nav-item active" data-page="split" onclick="switchPage('split')">
+            <button class="nav-item active" data-page="home" onclick="switchPage('home')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                <span>Beranda</span>
+            </button>
+            <button class="nav-item" data-page="split" onclick="switchPage('split')">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 10h20M10 4v16"/></svg>
-                <span>Split Bill</span>
+                <span>Patungan</span>
             </button>
             <button class="nav-item" data-page="jadwal" onclick="switchPage('jadwal')">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
@@ -238,11 +512,39 @@
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
                 <span>Doa</span>
             </button>
-            <button class="nav-item" data-page="zakat" onclick="switchPage('zakat')">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
-                <span>Zakat</span>
+            <button class="nav-item" id="nav-more-btn" onclick="toggleMoreMenu()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="19" r="1.5" fill="currentColor"/></svg>
+                <span>Lainnya</span>
             </button>
         </nav>
+        <!-- More Menu Popup -->
+        <div class="more-menu hidden" id="more-menu">
+            <button class="more-item" data-page="zakat" onclick="switchPage('zakat');toggleMoreMenu()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 000-7.78z"/></svg>
+                <span>Kalkulator Zakat</span>
+            </button>
+            <button class="more-item" data-page="kiblat" onclick="switchPage('kiblat');toggleMoreMenu()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 19 21 12 17 5 21"/></svg>
+                <span>Arah Kiblat</span>
+            </button>
+            <button class="more-item" data-page="quran" onclick="switchPage('quran');toggleMoreMenu()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+                <span>Al-Quran & Hadits</span>
+            </button>
+            <button class="more-item" data-page="tasbih" onclick="switchPage('tasbih');toggleMoreMenu()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="9"/><line x1="12" y1="15" x2="12" y2="22"/></svg>
+                <span>Tasbih Digital</span>
+            </button>
+            <button class="more-item" data-page="kalender" onclick="switchPage('kalender');toggleMoreMenu()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <span>Kalender Hijriyah</span>
+            </button>
+            <button class="more-item" data-page="thr" onclick="switchPage('thr');toggleMoreMenu()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
+                <span>Bagi THR/Hampers</span>
+            </button>
+        </div>
+        <div class="overlay hidden" id="more-overlay" onclick="toggleMoreMenu()"></div>
     </div>
 
     <script src="app.js"></script>
