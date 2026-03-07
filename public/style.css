@@ -2960,23 +2960,70 @@ body.theme-light .city-search input {
 
 .calendar-day {
     text-align: center;
-    padding: 8px 4px;
+    padding: 6px 2px;
     font-size: .82rem;
     color: var(--t2);
     border-radius: var(--r);
     cursor: default;
     position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    min-height: 42px;
+    justify-content: center;
+}
+
+.calendar-day .cal-masehi {
+    font-weight: 700;
+    font-size: .82rem;
+    color: var(--t1);
+    line-height: 1.1;
+}
+
+.calendar-day .cal-hijri {
+    font-size: .58rem;
+    color: var(--t3);
+    font-weight: 500;
+    line-height: 1;
 }
 
 .calendar-day.today {
     background: var(--pri);
+    border-radius: 10px;
+}
+
+.calendar-day.today .cal-masehi {
     color: white;
-    font-weight: 800;
-    border-radius: 50%;
+    font-weight: 900;
+}
+
+.calendar-day.today .cal-hijri {
+    color: rgba(255,255,255,.7);
 }
 
 .calendar-day.empty {
     visibility: hidden;
+}
+
+.calendar-day.event-day {
+    background: rgba(99,102,241,.08);
+    border-radius: 10px;
+}
+
+.event-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--sec);
+    position: absolute;
+    bottom: 3px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.calendar-day.today .event-dot {
+    background: rgba(255,255,255,.85);
 }
 
 .calendar-hijri-info {
@@ -2997,6 +3044,48 @@ body.theme-light .city-search input {
 .calendar-masehi-date {
     font-size: .85rem;
     color: var(--t2);
+}
+
+/* Calendar Events */
+.calendar-events {
+    margin-top: 16px;
+}
+
+.calendar-event-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: var(--glass);
+    border: 1px solid var(--glass-b);
+    border-radius: var(--r);
+    margin-bottom: 8px;
+}
+
+.event-day-badge {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--grad);
+    color: white;
+    font-weight: 800;
+    font-size: .85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.event-name {
+    font-size: .85rem;
+    font-weight: 700;
+    color: var(--t1);
+}
+
+.event-hijri {
+    font-size: .72rem;
+    color: var(--t3);
+    font-weight: 500;
 }
 
 .calendar-events {

@@ -78,7 +78,7 @@ function startCountdown() {
 function pad(n) { return n.toString().padStart(2, '0'); }
 
 // ===== PAGE NAVIGATION =====
-const MORE_PAGES = ['zakat', 'kiblat', 'quran'];
+const MORE_PAGES = ['zakat', 'kiblat', 'quran', 'tasbih', 'kalender', 'thr'];
 
 window.switchPage = function(page) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -1109,12 +1109,43 @@ function updateTasbihUI() {
 }
 
 // ============================================================
-// KALENDER HIJRIYAH
+// KALENDER HIJRIYAH (Local Computation — no API needed)
 // ============================================================
 let calCurrentYear = new Date().getFullYear();
 let calCurrentMonth = new Date().getMonth() + 1;
 
-async function initKalender() {
+// Hijri date converter (Kuwaiti algorithm)
+function gregorianToHijri(gYear, gMonth, gDay) {
+    let d = new Date(gYear, gMonth - 1, gDay);
+    let jd = Math.floor((d.getTime() / 86400000) + 2440587.5);
+    let l = jd - 1948440 + 10632;
+    let n = Math.floor((l - 1) / 10631);
+    l = l - 10631 * n + 354;
+    let j = (Math.floor((10985 - l) / 5316)) * (Math.floor((50 * l) / 17719)) + (Math.floor(l / 5670)) * (Math.floor((43 * l) / 15238));
+    l = l - (Math.floor((30 - j) / 15)) * (Math.floor((17719 * j) / 50)) - (Math.floor(j / 16)) * (Math.floor((15238 * j) / 43)) + 29;
+    let hMonth = Math.floor((24 * l) / 709);
+    let hDay = l - Math.floor((709 * hMonth) / 24);
+    let hYear = 30 * n + j - 30;
+    return { year: hYear, month: hMonth, day: hDay };
+}
+
+const hijriMonthNames = [
+    'Muharram', 'Safar', 'Rabiul Awal', 'Rabiul Akhir',
+    'Jumadil Awal', 'Jumadil Akhir', 'Rajab', 'Syaban',
+    'Ramadan', 'Syawal', 'Dzulqaidah', 'Dzulhijjah'
+];
+
+// Important Islamic dates (Hijri month, day, name)
+const islamicEvents = [
+    [1, 1, 'Tahun Baru Islam'], [1, 10, 'Hari Asyura'],
+    [3, 12, 'Maulid Nabi Muhammad SAW'], [7, 27, 'Isra Mi\'raj'],
+    [8, 15, 'Nisfu Sya\'ban'], [9, 1, 'Awal Ramadan'],
+    [9, 17, 'Nuzulul Quran'], [10, 1, 'Idul Fitri'],
+    [10, 2, 'Idul Fitri (Hari ke-2)'], [12, 10, 'Idul Adha'],
+    [12, 8, 'Hari Tarwiyah'], [12, 9, 'Wukuf di Arafah']
+];
+
+function initKalender() {
     renderKalenderContainer();
 }
 
@@ -1130,73 +1161,81 @@ window.nextMonth = function() {
     renderKalenderContainer();
 }
 
-async function renderKalenderContainer() {
+function renderKalenderContainer() {
     const grid = document.getElementById('cal-days-grid');
     const monthName = document.getElementById('cal-month');
     const yearText = document.getElementById('cal-year');
     if (!grid) return;
-    
+
     const d = new Date(calCurrentYear, calCurrentMonth - 1, 1);
     monthName.textContent = d.toLocaleString('id-ID', { month: 'long' });
     yearText.textContent = calCurrentYear;
-    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--t3);">Memuat data...</div>';
-    
-    try {
-        const res = await fetch(`/api/kalender/${calCurrentYear}/${calCurrentMonth}`);
-        const result = await res.json();
-        
-        if (result.status && result.data) {
-            const daysInMonth = new Date(calCurrentYear, calCurrentMonth, 0).getDate();
-            const firstDayIndex = d.getDay(); // 0 is Sunday
-            
-            let html = '';
-            for (let i = 0; i < firstDayIndex; i++) {
-                html += '<div class="calendar-day empty"></div>';
-            }
-            
-            const today = new Date();
-            let todayHijri = null;
-            let eventsHtml = '';
-            
-            // Note: API myquran v3 kalender endpoint returns data array? Hmm actually myquran calendar API returns data per day or per month depending on endpoint.
-            // Wait, their kalender is usually not an array of months but we will see. If it fails, fallback gracefully 
-            // the proxy gets /api/kalender/2026/03
-            // Assuming result.data is an array or object of dates
-            
-            let dataArr = [];
-            if (Array.isArray(result.data)) dataArr = result.data;
-            else if (result.data.jadwal) dataArr = result.data.jadwal;
-            else dataArr = Object.values(result.data); // fallback objects
 
-            for (let i = 1; i <= daysInMonth; i++) {
-                const theDateStr = `${calCurrentYear}-${String(calCurrentMonth).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
-                const isToday = (i === today.getDate() && calCurrentMonth === (today.getMonth()+1) && calCurrentYear === today.getFullYear());
-                
-                // Usually `date` property exists
-                let hariData = dataArr.find(x => x && String(x.date).includes(theDateStr)) || {};
-                
-                html += `<div class="calendar-day ${isToday ? 'today' : ''}" title="${hariData.date || i}">${i}</div>`;
-                
-                if (isToday) todayHijri = hariData;
-            }
-            grid.innerHTML = html;
-            
-            // Very hacky display of hijri date based on API response structure differences
-            if (todayHijri && todayHijri.date) {
-                document.getElementById('cal-today-hijri').innerHTML = `
-                    <div class="calendar-hijri-date">${todayHijri.hijri || todayHijri.tanggal || "Kalender API"}</div>
-                    <div class="calendar-masehi-date">${new Date().toLocaleDateString('id-ID', {weekday:'long', year:'numeric', month:'long', day:'numeric'})}</div>
-                `;
-            } else {
-                document.getElementById('cal-today-hijri').innerHTML = `
-                    <div class="calendar-hijri-date">${new Date().toLocaleDateString('id-ID', {weekday:'long', year:'numeric', month:'long', day:'numeric'})}</div>
-                    <div class="calendar-masehi-date">Kalender Islam ditampilkan jika tersedia.</div>
-                `;
-            }
-            
-        } else throw new Error();
-    } catch (e) {
-        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--t3);">Gagal memuat API Kalender</div>';
+    const daysInMonth = new Date(calCurrentYear, calCurrentMonth, 0).getDate();
+    const firstDayIndex = d.getDay(); // 0=Sunday
+    const today = new Date();
+
+    let html = '';
+    for (let i = 0; i < firstDayIndex; i++) {
+        html += '<div class="calendar-day empty"></div>';
+    }
+
+    let todayHijri = null;
+    let monthEvents = [];
+
+    for (let i = 1; i <= daysInMonth; i++) {
+        const isToday = (i === today.getDate() && calCurrentMonth === (today.getMonth() + 1) && calCurrentYear === today.getFullYear());
+        const h = gregorianToHijri(calCurrentYear, calCurrentMonth, i);
+        const hijriStr = `${h.day} ${hijriMonthNames[h.month - 1]} ${h.year} H`;
+
+        // Check for Islamic events
+        const evt = islamicEvents.find(e => e[0] === h.month && e[1] === h.day);
+        let evtClass = evt ? ' event-day' : '';
+        let evtDot = evt ? '<span class="event-dot"></span>' : '';
+
+        if (evt) monthEvents.push({ day: i, hijriDay: h.day, hijriMonth: hijriMonthNames[h.month - 1], name: evt[2] });
+        if (isToday) todayHijri = h;
+
+        html += `<div class="calendar-day${isToday ? ' today' : ''}${evtClass}" title="${hijriStr}">
+            <span class="cal-masehi">${i}</span>
+            <span class="cal-hijri">${h.day}</span>
+            ${evtDot}
+        </div>`;
+    }
+    grid.innerHTML = html;
+
+    // Hijri info for today
+    const hijriSection = document.getElementById('cal-today-hijri');
+    if (todayHijri) {
+        hijriSection.innerHTML = `
+            <div class="calendar-hijri-date">${todayHijri.day} ${hijriMonthNames[todayHijri.month - 1]} ${todayHijri.year} Hijriyah</div>
+            <div class="calendar-masehi-date">${today.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
+        `;
+    } else {
+        const h = gregorianToHijri(calCurrentYear, calCurrentMonth, 1);
+        hijriSection.innerHTML = `
+            <div class="calendar-hijri-date">${h.day} ${hijriMonthNames[h.month - 1]} ${h.year} Hijriyah</div>
+            <div class="calendar-masehi-date">${new Date(calCurrentYear, calCurrentMonth - 1, 1).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
+        `;
+    }
+
+    // Render events
+    const eventsContainer = document.getElementById('cal-events');
+    if (eventsContainer) {
+        if (monthEvents.length > 0) {
+            eventsContainer.innerHTML = '<h4 style="margin:0 0 10px;font-size:.85rem;color:var(--t2);">📅 Hari Besar Islam bulan ini:</h4>' +
+                monthEvents.map(e => `
+                    <div class="calendar-event-item">
+                        <span class="event-day-badge">${e.day}</span>
+                        <div>
+                            <div class="event-name">${e.name}</div>
+                            <div class="event-hijri">${e.hijriDay} ${e.hijriMonth}</div>
+                        </div>
+                    </div>
+                `).join('');
+        } else {
+            eventsContainer.innerHTML = '<p style="text-align:center;color:var(--t3);font-size:.82rem;">Tidak ada hari besar Islam di bulan ini.</p>';
+        }
     }
 }
 
