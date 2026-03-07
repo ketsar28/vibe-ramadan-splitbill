@@ -1,35 +1,40 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap');
 
 :root {
-    --pri: #ff2a70;
-    --pri-g: rgba(255, 42, 112, 0.4);
-    --sec: #6366f1;
-    --sec-g: rgba(99, 102, 241, 0.4);
-    --acc: #00f2fe;
-    --warm: #f59e0b;
-    --ok: #10b981;
-    --ok-g: rgba(16, 185, 129, 0.4);
-    --err: #ef4444;
+    --pri: #6366f1;
+    --pri-g: rgba(99, 102, 241, 0.3);
+    --sec: #a855f7;
+    --sec-g: rgba(168, 85, 247, 0.3);
+    --acc: #ff2a70;
+    --acc-g: rgba(255, 42, 112, 0.3);
     --bg: #030014;
-    --glass: rgba(255, 255, 255, 0.04);
-    --glass-b: rgba(255, 255, 255, 0.08);
-    --glass-h: rgba(255, 255, 255, 0.15);
     --t1: #f8fafc;
     --t2: #94a3b8;
     --t3: #64748b;
-    --r: 14px;
+    --glass: rgba(255, 255, 255, 0.04);
+    --glass-h: rgba(255, 255, 255, 0.08);
+    --glass-b: rgba(255, 255, 255, 0.08);
+    --r: 16px;
     --rl: 22px;
-    --rp: 100px;
-    --grad: linear-gradient(135deg, var(--pri) 0%, var(--sec) 100%);
+    --rp: 30px;
+    --ok: #10b981;
+    --ok-g: rgba(16, 185, 129, 0.3);
+    --err: #ef4444;
+    --warm: #f59e0b;
+    --grad: linear-gradient(135deg, var(--pri), var(--sec));
+    --grad-warm: linear-gradient(135deg, #fbbf24, #f59e0b);
+    --grad-ok: linear-gradient(135deg, #10b981, #34d399);
 }
 
 /* Ramadan Theme */
 body.theme-ramadan {
-    --pri: #d4a017;
-    --pri-g: rgba(212, 160, 23, 0.3);
-    --sec: #1e6b3a;
-    --sec-g: rgba(30, 107, 58, 0.3);
+    --pri: #10b981;
+    --pri-g: rgba(16, 185, 129, 0.3);
+    --sec: #059669;
+    --sec-g: rgba(5, 150, 105, 0.3);
+    --acc: #fbbf24;
     --bg: #060d08;
+    --grad: linear-gradient(135deg, var(--pri), var(--sec));
 }
 
 body.theme-ramadan .aurora-bg {
@@ -192,14 +197,15 @@ body.theme-ocean {
     --sec-g: rgba(59, 130, 246, 0.3);
     --acc: #22d3ee;
     --bg: #020617;
+    --grad: linear-gradient(135deg, var(--pri), var(--sec));
 }
 
 body.theme-ocean .aurora-bg {
     background: radial-gradient(ellipse at 30% 20%, #0c1929 0%, #020617 70%);
 }
-body.theme-ocean .orb-1 { background: #1e40af; }
-body.theme-ocean .orb-2 { background: #0891b2; }
-body.theme-ocean .orb-3 { background: #1d4ed8; opacity: 0.08; }
+body.theme-ocean .orb-1 { background: #1e40af; opacity: 0.12; }
+body.theme-ocean .orb-2 { background: #0891b2; opacity: 0.12; }
+body.theme-ocean .orb-3 { background: #1d4ed8; opacity: 0.06; }
 body.theme-ocean .bottom-nav { background: rgba(2, 6, 23, 0.9); }
 
 /* Sunset Theme */
@@ -211,14 +217,15 @@ body.theme-sunset {
     --acc: #fbbf24;
     --warm: #f59e0b;
     --bg: #1c0a00;
+    --grad: linear-gradient(135deg, var(--pri), var(--sec));
 }
 
 body.theme-sunset .aurora-bg {
     background: radial-gradient(ellipse at 30% 20%, #2d1208 0%, #1c0a00 70%);
 }
-body.theme-sunset .orb-1 { background: #b45309; }
-body.theme-sunset .orb-2 { background: #be123c; }
-body.theme-sunset .orb-3 { background: #92400e; opacity: 0.08; }
+body.theme-sunset .orb-1 { background: #b45309; opacity: 0.12; }
+body.theme-sunset .orb-2 { background: #be123c; opacity: 0.12; }
+body.theme-sunset .orb-3 { background: #92400e; opacity: 0.06; }
 body.theme-sunset .bottom-nav { background: rgba(28, 10, 0, 0.9); }
 
 
@@ -266,7 +273,8 @@ body {
 .orb-1 {
     width: 50vw;
     height: 50vw;
-    background: #7c3aed;
+    background: var(--pri);
+    opacity: 0.1;
     top: -20vh;
     left: -10vw;
 }
@@ -274,7 +282,7 @@ body {
 .orb-2 {
     width: 40vw;
     height: 40vw;
-    background: var(--pri);
+    background: var(--sec);
     bottom: -10vh;
     right: -5vw;
     animation-delay: -7s;
@@ -286,7 +294,7 @@ body {
     background: var(--acc);
     top: 50%;
     left: 35%;
-    opacity: 0.15;
+    opacity: 0.1;
     animation-delay: -12s;
 }
 
@@ -395,7 +403,7 @@ body {
 }
 
 .brand-accent {
-    background: linear-gradient(135deg, var(--pri), var(--sec));
+    background: var(--grad);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
@@ -1032,7 +1040,7 @@ body.theme-light .home-card:hover {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, var(--pri), #f43f5e);
+    background: var(--grad);
     color: white;
     box-shadow: 0 8px 24px -6px var(--pri-g), inset 0 -2px 0 rgba(0,0,0,0.15);
 }
@@ -1045,7 +1053,7 @@ body.theme-light .home-card:hover {
 .btn-primary:hover::after { opacity: 1; }
 
 .btn-accent {
-    background: linear-gradient(135deg, var(--sec), #818cf8);
+    background: var(--grad);
     color: white;
     box-shadow: 0 8px 20px -6px var(--sec-g);
 }
@@ -1099,9 +1107,9 @@ body.theme-light .home-card:hover {
 }
 
 .btn-mayar {
-    background: linear-gradient(135deg, #0ea5e9, #0284c7);
+    background: var(--grad-ok);
     color: white;
-    box-shadow: 0 8px 24px -6px rgba(14, 165, 233, 0.4), inset 0 -2px 0 rgba(0,0,0,0.15);
+    box-shadow: 0 8px 24px -6px var(--ok-g), inset 0 -2px 0 rgba(0,0,0,0.15);
     width: 100%;
     margin-top: 12px;
 }
@@ -1139,8 +1147,8 @@ input[type="number"]::-webkit-inner-spin-button {
 input:focus,
 select:focus {
     border-color: var(--sec);
-    background: rgba(0, 0, 0, 0.5);
-    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+    background: rgba(0,0,0,0.5);
+    box-shadow: 0 0 0 4px var(--sec-g);
     transform: translateY(-1px);
 }
 
@@ -1203,9 +1211,9 @@ select option {
 }
 
 .tag {
-    background: rgba(99, 102, 241, 0.06);
-    border: 1px solid rgba(99, 102, 241, 0.15);
-    color: #c7d2fe;
+    background: var(--pri-g);
+    border: 1px solid var(--pri-g);
+    color: var(--t1);
     padding: 5px 12px;
     border-radius: var(--rp);
     font-size: .8rem;
@@ -1401,8 +1409,8 @@ select option {
 
 /* Summary */
 .summary-card {
-    background: rgba(99, 102, 241, 0.04);
-    border: 1px solid rgba(99, 102, 241, 0.1);
+    background: var(--pri-g);
+    border: 1px solid var(--pri-g);
     border-radius: var(--rl);
     padding: 14px;
     margin-bottom: 16px;
@@ -1549,7 +1557,7 @@ select option {
     left: 0;
     right: 0;
     height: 2px;
-    background: linear-gradient(90deg, var(--pri), var(--sec));
+    background: var(--grad);
 }
 
 .result-card:hover {
@@ -1573,7 +1581,7 @@ select option {
     width: 30px;
     height: 30px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--pri), var(--sec));
+    background: var(--grad);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2123,7 +2131,7 @@ body.theme-light .more-menu {
 }
 
 .app-footer strong {
-    background: linear-gradient(135deg, var(--pri), var(--sec));
+    background: var(--grad);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
@@ -2327,7 +2335,7 @@ body.theme-light .pm-content {
 .hc-icon {
     width: 60px; height: 60px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--sec), var(--pri));
+    background: var(--grad);
     display: flex; align-items: center; justify-content: center;
     margin: 0 auto 14px;
     color: #fff;
@@ -2531,15 +2539,15 @@ body.theme-light .city-search input {
     width: 200px;
     height: 200px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(99,102,241,.06) 0%, transparent 70%);
-    border: 3px solid rgba(99,102,241,.2);
+    background: radial-gradient(circle, var(--sec-g) 0%, transparent 70%);
+    border: 3px solid var(--sec-g);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-direction: column;
     position: relative;
     transition: transform .3s ease-out;
-    box-shadow: 0 0 40px rgba(99,102,241,.1), inset 0 0 30px rgba(99,102,241,.05);
+    box-shadow: 0 0 40px var(--sec-g), inset 0 0 30px rgba(99,102,241,.05);
 }
 
 .compass::before {
@@ -2916,7 +2924,7 @@ body.theme-light .city-search input {
     height: 140px;
     border-radius: 50%;
     border: 3px solid var(--pri);
-    background: linear-gradient(145deg, rgba(99,102,241,.08), rgba(99,102,241,.02));
+    background: linear-gradient(145deg, var(--pri-g), transparent);
     color: var(--pri);
     font-size: 1.4rem;
     font-weight: 800;
@@ -2932,7 +2940,7 @@ body.theme-light .city-search input {
 
 .tasbih-btn:active {
     transform: scale(0.92);
-    box-shadow: 0 0 24px rgba(99,102,241,.3);
+    box-shadow: 0 0 24px var(--pri-g);
 }
 
 .tasbih-progress {
@@ -2980,7 +2988,7 @@ body.theme-light .city-search input {
 .tasbih-target-btn.active {
     border-color: var(--pri);
     color: var(--pri);
-    background: rgba(99,102,241,.08);
+    background: var(--pri-g);
 }
 
 /* ============================================================
@@ -3096,7 +3104,7 @@ body.theme-light .city-search input {
 }
 
 .calendar-day.event-day {
-    background: rgba(99,102,241,.08);
+    background: var(--pri-g);
     border-radius: 10px;
 }
 
@@ -3281,4 +3289,171 @@ body.theme-light .city-search input {
         width: 68px;
         height: 68px;
     }
+}
+
+/* ============================================================ 
+   MUTABA'AH YAUMIYAH — Linear & Aligned Redesign
+   ============================================================ */
+.tracker-summary {
+    background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: var(--rl);
+    padding: 24px;
+    margin-bottom: 24px;
+}
+
+.tracker-progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 16px;
+}
+
+.tracker-stats h3 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin-bottom: 4px;
+    background: var(--grad);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.tracker-stats p {
+    font-size: 0.82rem;
+    color: var(--t3);
+    font-weight: 600;
+}
+
+.tracker-percent-badge {
+    background: var(--pri);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 900;
+    box-shadow: 0 4px 15px var(--pri-g);
+}
+
+.tracker-bar-container {
+    width: 100%;
+    height: 10px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 5px;
+    overflow: hidden;
+    position: relative;
+}
+
+.tracker-bar-fill {
+    height: 100%;
+    background: var(--grad);
+    border-radius: 5px;
+    transition: width 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+    box-shadow: 0 0 10px var(--sec-g);
+}
+
+.tracker-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.tracker-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* CRITICAL: Pushes checkbox to far right */
+    gap: 16px;
+    padding: 14px 20px;
+    background: var(--glass);
+    border: 1px solid var(--glass-b);
+    border-radius: var(--r);
+    cursor: pointer;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.tracker-item:hover {
+    background: var(--glass-h);
+    transform: scale(1.005);
+}
+
+.tracker-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex: 1; /* Allow text to grow but keep it separate from checkbox */
+}
+
+.tracker-icon {
+    font-size: 1.2rem;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.05);
+    border-radius: 10px;
+}
+
+.tracker-info h4 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--t1);
+}
+
+.tracker-info p {
+    font-size: 0.72rem;
+    color: var(--t3);
+}
+
+.tracker-check {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    border: 2px solid var(--glass-b);
+    background: rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    flex-shrink: 0; /* CRITICAL: Prevent checkbox from shrinking */
+}
+
+.tracker-item.completed {
+    border-color: rgba(16, 185, 129, 0.2);
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), transparent);
+}
+
+.tracker-item.completed .tracker-check {
+    background: var(--ok);
+    border-color: var(--ok);
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
+}
+
+.tracker-item.completed .tracker-check::after {
+    content: '✓';
+    color: white;
+    font-size: 16px;
+    font-weight: 900;
+}
+
+.tracker-item.completed h4 {
+    opacity: 0.6;
+    text-decoration: line-through;
+}
+
+/* Light Theme */
+body.theme-light .tracker-summary {
+    background: white;
+    border-color: rgba(0,0,0,0.05);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+}
+
+body.theme-light .tracker-item {
+    background: white;
+    border-color: rgba(0,0,0,0.04);
+}
+
+body.theme-light .tracker-bar-container {
+    background: #f1f5f9;
 }

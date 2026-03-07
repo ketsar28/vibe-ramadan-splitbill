@@ -379,7 +379,7 @@ window.payMayar = async function(name, amount) {
         if (r.success && r.link) {
             localStorage.setItem('splitbill_pending_pay', JSON.stringify({ name, amount, time: Date.now() }));
             btn.textContent = 'Link Siap'; btn.style.opacity = '1';
-            btn.style.background = 'linear-gradient(135deg,#10b981,#059669)';
+            btn.style.background = 'var(--ok)';
             window.open(r.link, '_blank');
             const onReturn = () => {
                 if (document.visibilityState === 'visible') {
@@ -392,7 +392,7 @@ window.payMayar = async function(name, amount) {
         } else throw new Error();
     } catch (e) {
         btn.textContent = 'Gagal - Coba Lagi'; btn.style.opacity = '1';
-        btn.style.background = 'linear-gradient(135deg,#ef4444,#dc2626)';
+        btn.style.background = 'var(--err)';
         btn.disabled = false; btn.onclick = () => payMayar(name, amount);
         showToast('Gagal membuat link pembayaran');
     }
@@ -1291,12 +1291,12 @@ window.switchPage = function(page) {
 // MUTABA'AH YAUMIYAH LOGIC
 // ============================================================
 const TRACKER_ITEMS = [
-    { id: 'sholat', title: 'Sholat 5 Waktu', desc: 'Selesaikan sholat fardu tepat waktu' },
-    { id: 'puasa', title: 'Puasa Ramadan', desc: 'Menahan diri dari fajar hingga maghrib' },
-    { id: 'tarawih', title: 'Sholat Tarawih', desc: 'Qiyamul Lail secara berjamaah atau sendiri' },
-    { id: 'tilawah', title: 'Tilawah Qur\'an', desc: 'Membaca atau tadarus Al-Qur\'an' },
-    { id: 'sedekah', title: 'Sedekah Harian', desc: 'Berbagi kebahagiaan dengan sesama' },
-    { id: 'doa', title: 'Zikir & Doa', desc: 'Pagi, petang, dan setelah sholat' }
+    { id: 'sholat', title: 'Sholat 5 Waktu', desc: 'Fardu tepat waktu', icon: '🕌' },
+    { id: 'puasa', title: 'Puasa Ramadan', desc: 'Fajar hingga maghrib', icon: '🌙' },
+    { id: 'tarawih', title: 'Sholat Tarawih', desc: 'Berjamaah/Sendiri', icon: '✨' },
+    { id: 'tilawah', title: 'Tilawah Qur\'an', desc: 'Tadarus harian', icon: '📖' },
+    { id: 'sedekah', title: 'Sedekah Harian', desc: 'Berbagi kebahagiaan', icon: '💰' },
+    { id: 'doa', title: 'Zikir & Doa', desc: 'Pagi, petang, & sholat', icon: '🤲' }
 ];
 
 window.initTracker = function() {
@@ -1330,9 +1330,12 @@ function renderTracker(state, dateKey) {
         div.onclick = () => toggleTrackerItem(item.id, state, dateKey);
 
         div.innerHTML = `
-            <div class="tracker-info">
-                <h4>${item.title}</h4>
-                <p>${item.desc}</p>
+            <div class="tracker-left">
+                <div class="tracker-icon">${item.icon}</div>
+                <div class="tracker-info">
+                    <h4>${item.title}</h4>
+                    <p>${item.desc}</p>
+                </div>
             </div>
             <div class="tracker-check"></div>
         `;
@@ -1343,7 +1346,6 @@ function renderTracker(state, dateKey) {
 }
 
 function toggleTrackerItem(id, state, dateKey) {
-    // Add haptic-like effect or animation
     state[id] = !state[id];
     localStorage.setItem(dateKey, JSON.stringify(state));
     renderTracker(state, dateKey);
@@ -1351,11 +1353,11 @@ function toggleTrackerItem(id, state, dateKey) {
 
 function updateTrackerProgress(completed, total) {
     const percent = Math.round((completed / total) * 100);
-    const circle = document.getElementById('tracker-progress-circle');
+    const bar = document.getElementById('tracker-progress-bar');
     const text = document.getElementById('tracker-percent');
     const greeting = document.getElementById('tracker-greeting');
 
-    if (circle) circle.setAttribute('stroke-dasharray', `${percent}, 100`);
+    if (bar) bar.style.width = `${percent}%`;
     if (text) text.textContent = `${percent}%`;
 
     // Dynamic Greetings
@@ -1363,7 +1365,7 @@ function updateTrackerProgress(completed, total) {
         if (percent === 100) greeting.textContent = 'Maa Syaa Allah! ✨';
         else if (percent >= 50) greeting.textContent = 'Terus Istiqomah! 💪';
         else if (completed > 0) greeting.textContent = 'Awal yang Baik! 🌙';
-        else greeting.textContent = 'Semangat Ibadah!';
+        else greeting.textContent = 'Semangat Ibadah! ✨';
     }
 }
 
