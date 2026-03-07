@@ -78,7 +78,7 @@ function startCountdown() {
 function pad(n) { return n.toString().padStart(2, '0'); }
 
 // ===== PAGE NAVIGATION =====
-const MORE_PAGES = ['zakat', 'kiblat', 'quran', 'tasbih', 'kalender', 'thr'];
+const MORE_PAGES = ['zakat', 'kiblat', 'quran', 'tasbih', 'kalender', 'tracker'];
 
 window.switchPage = function(page) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -1280,9 +1280,90 @@ window.switchPage = function(page) {
         if (page === 'quran' && typeof initQuranPage === 'function') initQuranPage();
         if (page === 'tasbih' && typeof initTasbih === 'function') initTasbih();
         if (page === 'kalender' && typeof initKalender === 'function') initKalender();
+        if (page === 'tracker' && typeof initTracker === 'function') initTracker();
         
     } catch (err) {
         console.error('[App] SwitchPage Error:', err);
     }
 };
+
+// ============================================================
+// MUTABA'AH YAUMIYAH LOGIC
+// ============================================================
+const TRACKER_ITEMS = [
+    { id: 'sholat', title: 'Sholat 5 Waktu', desc: 'Selesaikan sholat fardu tepat waktu' },
+    { id: 'puasa', title: 'Puasa Ramadan', desc: 'Menahan diri dari fajar hingga maghrib' },
+    { id: 'tarawih', title: 'Sholat Tarawih', desc: 'Qiyamul Lail secara berjamaah atau sendiri' },
+    { id: 'tilawah', title: 'Tilawah Qur\'an', desc: 'Membaca atau tadarus Al-Qur\'an' },
+    { id: 'sedekah', title: 'Sedekah Harian', desc: 'Berbagi kebahagiaan dengan sesama' },
+    { id: 'doa', title: 'Zikir & Doa', desc: 'Pagi, petang, dan setelah sholat' }
+];
+
+window.initTracker = function() {
+    const now = new Date();
+    const dateKey = `tracker_${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}`;
+    const saved = localStorage.getItem(dateKey);
+    let state = saved ? JSON.parse(saved) : {};
+
+    const container = document.getElementById('tracker-list');
+    if (!container) return;
+
+    // Display Current Date
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    document.getElementById('tracker-date').textContent = now.toLocaleDateString('id-ID', options);
+
+    renderTracker(state, dateKey);
+};
+
+function renderTracker(state, dateKey) {
+    const container = document.getElementById('tracker-list');
+    container.innerHTML = '';
+
+    let completedCount = 0;
+
+    TRACKER_ITEMS.forEach(item => {
+        const isCompleted = state[item.id] || false;
+        if (isCompleted) completedCount++;
+
+        const div = document.createElement('div');
+        div.className = `tracker-item ${isCompleted ? 'completed' : ''}`;
+        div.onclick = () => toggleTrackerItem(item.id, state, dateKey);
+
+        div.innerHTML = `
+            <div class="tracker-info">
+                <h4>${item.title}</h4>
+                <p>${item.desc}</p>
+            </div>
+            <div class="tracker-check"></div>
+        `;
+        container.appendChild(div);
+    });
+
+    updateTrackerProgress(completedCount, TRACKER_ITEMS.length);
+}
+
+function toggleTrackerItem(id, state, dateKey) {
+    // Add haptic-like effect or animation
+    state[id] = !state[id];
+    localStorage.setItem(dateKey, JSON.stringify(state));
+    renderTracker(state, dateKey);
+}
+
+function updateTrackerProgress(completed, total) {
+    const percent = Math.round((completed / total) * 100);
+    const circle = document.getElementById('tracker-progress-circle');
+    const text = document.getElementById('tracker-percent');
+    const greeting = document.getElementById('tracker-greeting');
+
+    if (circle) circle.setAttribute('stroke-dasharray', `${percent}, 100`);
+    if (text) text.textContent = `${percent}%`;
+
+    // Dynamic Greetings
+    if (greeting) {
+        if (percent === 100) greeting.textContent = 'Maa Syaa Allah! ✨';
+        else if (percent >= 50) greeting.textContent = 'Terus Istiqomah! 💪';
+        else if (completed > 0) greeting.textContent = 'Awal yang Baik! 🌙';
+        else greeting.textContent = 'Semangat Ibadah!';
+    }
+}
 
