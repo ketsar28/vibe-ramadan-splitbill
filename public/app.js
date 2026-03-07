@@ -1268,13 +1268,21 @@ document.addEventListener('input', function(e) {
 });
 
 
-// ===== ENHANCED SWITCH PAGE (add kiblat, quran, tasbih, kalender triggers) =====
+// ===== ENHANCED SWITCH PAGE (robust handling) =====
 const _origSwitchPage = window.switchPage;
 window.switchPage = function(page) {
-    _origSwitchPage(page);
-    if (page === 'kiblat') initKiblat();
-    if (page === 'quran') initQuranPage();
-    if (page === 'tasbih') initTasbih();
-    if (page === 'kalender') initKalender();
+    console.log('[App] Switching to:', page);
+    try {
+        _origSwitchPage(page);
+        
+        // Dynamic initialization with error safety
+        if (page === 'kiblat' && typeof initKiblat === 'function') initKiblat();
+        if (page === 'quran' && typeof initQuranPage === 'function') initQuranPage();
+        if (page === 'tasbih' && typeof initTasbih === 'function') initTasbih();
+        if (page === 'kalender' && typeof initKalender === 'function') initKalender();
+        
+    } catch (err) {
+        console.error('[App] SwitchPage Error:', err);
+    }
 };
 

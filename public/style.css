@@ -20,6 +20,7 @@
     --r: 14px;
     --rl: 22px;
     --rp: 100px;
+    --grad: linear-gradient(135deg, var(--pri) 0%, var(--sec) 100%);
 }
 
 /* Ramadan Theme */
@@ -63,6 +64,7 @@ body.theme-light {
     --err: #dc2626;
     --warm: #d97706;
     --acc: #0284c7;
+    --grad: linear-gradient(135deg, #e11d48 0%, #4f46e5 100%);
 }
 
 body.theme-light .aurora-bg {
@@ -700,6 +702,44 @@ body {
 
 .tab-c {
     display: none;
+}
+
+/* Page Animations */
+.page {
+    display: none;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.page.active {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Home Card Hover Polish */
+.home-card {
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, background 0.3s ease;
+}
+
+.home-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+
+body.theme-light .home-card:hover {
+    box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+}
+
+/* Specific Tasbih Button Animation */
+.tasbih-btn {
+    transition: transform 0.1s active, box-shadow 0.2s;
+}
+
+.tasbih-btn:active {
+    transform: scale(0.92);
+    box-shadow: 0 0 20px var(--pri-g);
 }
 
 .tab-c.active {
@@ -2261,7 +2301,7 @@ body.theme-light .pm-content {
     padding: 28px 20px;
     text-align: center;
     cursor: pointer;
-    transition: all .3s cubic-bezier(.4,0,.2,1);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, background 0.3s ease;
     position: relative;
     overflow: hidden;
 }
@@ -2277,9 +2317,9 @@ body.theme-light .pm-content {
 }
 
 .home-card:hover, .home-card:active {
-    transform: translateY(-4px) scale(1.02);
+    transform: translateY(-8px) scale(1.02);
     border-color: var(--sec);
-    box-shadow: 0 8px 40px rgba(99,102,241,.15), inset 0 0 0 1px rgba(99,102,241,.12);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
 }
 
 .home-card:hover::before { opacity: 1; }
@@ -2313,8 +2353,57 @@ body.theme-light .home-card {
 }
 
 body.theme-light .home-card:hover {
-    border-color: var(--sec);
-    box-shadow: 0 8px 30px rgba(99,102,241,.12);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+}
+
+body.theme-light .toast {
+    background: white;
+    color: var(--t1);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+/* Light Mode Calendar Fixes */
+body.theme-light .calendar-hijri-info,
+body.theme-light .calendar-event-item {
+    background: white;
+    border-color: rgba(0,0,0,0.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+}
+
+body.theme-light .calendar-day .cal-masehi {
+    color: var(--t1);
+}
+
+body.theme-light .calendar-day .cal-hijri {
+    color: var(--t3);
+}
+
+body.theme-light .calendar-day.event-day {
+    background: rgba(79,70,229,.1);
+}
+
+body.theme-light .event-name {
+    color: var(--t1);
+}
+
+body.theme-light .event-hijri {
+    color: var(--t2);
+}
+
+body.theme-light .calendar-day.today .cal-masehi {
+    color: white;
+}
+
+body.theme-light .calendar-day.today {
+    background: var(--pri);
+}
+
+body.theme-light .tasbih-container {
+    background: white;
+}
+
+body.theme-light .tasbih-count {
+    color: var(--t1);
 }
 
 /* ============================================================
@@ -3067,13 +3156,14 @@ body.theme-light .city-search input {
     height: 36px;
     border-radius: 50%;
     background: var(--grad);
-    color: white;
+    color: #ffffff !important;
     font-weight: 800;
     font-size: .85rem;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
 .event-name {
