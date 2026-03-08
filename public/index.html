@@ -50,7 +50,7 @@
         <!-- ===================== PAGE: HOME ===================== -->
         <div id="page-home" class="page active">
             <header class="hero" id="hero-section">
-                <h1>Sahabat<br><span class="gradient-text">Ramadan</span></h1>
+                <h1>Sahabat <span class="gradient-text">Ramadan</span></h1>
                 <p class="hero-sub">Teman ibadahmu di bulan suci. Pilih fitur yang kamu butuhkan.</p>
             </header>
 
@@ -265,6 +265,10 @@
                 <div id="tab-zakat-mal" class="tab-c active">
                     <div class="zakat-form">
                         <div class="zk-field">
+                            <label>Nama Lengkap / Atas Nama</label>
+                            <input type="text" id="zakat-mal-name" class="z-name-input" placeholder="Masukkan nama pembayar">
+                        </div>
+                        <div class="zk-field">
                             <label>Total Harta / Tabungan (Rp)</label>
                             <input type="text" id="zakat-harta" class="c-input" inputmode="numeric" placeholder="Contoh: 50.000.000">
                         </div>
@@ -288,6 +292,10 @@
                 <!-- Zakat Fitrah -->
                 <div id="tab-zakat-fitrah" class="tab-c">
                     <div class="zakat-form">
+                        <div class="zk-field">
+                            <label>Nama Kepala Keluarga / Atas Nama</label>
+                            <input type="text" id="zakat-fitrah-name" class="z-name-input" placeholder="Masukkan nama pembayar">
+                        </div>
                         <div class="zk-field">
                             <label>Jumlah Jiwa (Anggota Keluarga)</label>
                             <input type="number" id="zakat-jiwa" value="1" min="1" max="50">
@@ -505,7 +513,7 @@
         <!-- Footer -->
         <footer class="app-footer">
             <p>&copy; 2026 <strong>Muhammad Ketsar Ali Abi Wahid</strong></p>
-            <p class="footer-sub">Dibuat untuk Kompetisi Vibecoding Mayar — Ramadan 2026</p>
+            <!-- <p class="footer-sub">Dibuat untuk Kompetisi Vibecoding Mayar — Ramadan 2026</p> -->
         </footer>
 
         <!-- Bottom Nav -->
@@ -560,6 +568,10 @@
         </div>
         <div class="overlay hidden" id="more-overlay" onclick="toggleMoreMenu()"></div>
     </div>
+
+    <button id="scroll-top-btn" class="scroll-top-btn hidden" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Ke Atas">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
+    </button>
 
     <script src="app.js"></script>
     <script>

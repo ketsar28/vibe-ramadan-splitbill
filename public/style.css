@@ -1,5 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap');
 
+html {
+    scroll-behavior: smooth;
+}
+
 :root {
     --pri: #6366f1;
     --pri-g: rgba(99, 102, 241, 0.3);
@@ -1534,6 +1538,39 @@ select option {
     color: var(--err);
 }
 
+.rc-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.rc-actions .btn-mayar {
+    flex: 1;
+}
+
+.paid-badge {
+    background: var(--grad-ok);
+    color: white;
+    font-size: 0.62rem;
+    font-weight: 900;
+    padding: 5px 10px;
+    border-radius: 30px;
+    letter-spacing: 0.8px;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.result-card.is-paid {
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(255, 255, 255, 0.02));
+}
+
+.result-card.is-paid .rc-amount {
+    color: var(--ok);
+}
+
 .results-grid {
     display: grid;
     gap: 10px;
@@ -1572,14 +1609,21 @@ select option {
     margin-bottom: 6px;
 }
 
+.rc-user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
 .rc-name {
-    font-size: 1rem;
+    font-size: 1.05rem;
     font-weight: 800;
+    color: var(--t1);
 }
 
 .rc-avatar {
-    width: 30px;
-    height: 30px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     background: var(--grad);
     display: flex;
@@ -2221,47 +2265,77 @@ body.theme-light .more-menu {
         max-width: 100%;
         border-radius: var(--rl) var(--rl) 0 0;
     }
-
-    .doa-arabic {
-        font-size: 1.3rem;
-    }
 }
 
-/* Payment Success Modal */
+/* Payer Modal */
+.payer-modal,
 .payment-modal {
     position: fixed;
     inset: 0;
-    z-index: 9000;
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(10px);
+    z-index: 10000;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 20px;
-    backdrop-filter: blur(8px);
-    animation: pageIn .3s ease;
+    animation: fadeIn .3s ease;
 }
 
 .pm-content {
-    background: linear-gradient(180deg, rgba(16, 185, 129, 0.08), var(--glass));
-    backdrop-filter: blur(30px);
-    border: 1px solid rgba(16, 185, 129, 0.2);
+    background: var(--glass);
+    border: 1px solid var(--glass-b);
+    backdrop-filter: blur(20px);
+    width: 100%;
+    max-width: 400px;
+    padding: 30px;
     border-radius: var(--rl);
-    padding: 36px 26px;
     text-align: center;
-    max-width: 380px;
+    position: relative;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+}
+
+.pm-close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--t2);
+}
+
+.pm-form {
+    margin: 25px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.pm-form input {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--glass-b);
+    padding: 12px 16px;
+    border-radius: var(--r);
+    color: white;
     width: 100%;
 }
 
+.pm-note {
+    font-size: .75rem;
+    color: var(--t3);
+    margin-top: 15px;
+}
+
 .pm-icon {
-    width: 64px;
-    height: 64px;
+    width: 60px;
+    height: 60px;
+    background: var(--grad-ok);
     border-radius: 50%;
-    background: linear-gradient(135deg, #10b981, #34d399);
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 16px;
-    font-size: 1.8rem;
+    margin: 0 auto 20px;
+    font-size: 1.5rem;
     color: white;
 }
 
@@ -2657,6 +2731,41 @@ body.theme-light .city-search input {
     background: linear-gradient(145deg, rgba(99,102,241,.06), rgba(99,102,241,.01));
     border: 1px solid rgba(99,102,241,.1);
     border-radius: var(--rl);
+}
+
+.btn-read-more {
+    background: none;
+    border: none;
+    color: var(--sec);
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 4px 0;
+    cursor: pointer;
+    text-decoration: underline;
+    transition: opacity 0.2s;
+}
+
+.btn-read-more:hover {
+    opacity: 0.8;
+}
+
+.surah-desc {
+    transition: all 0.3s ease;
+}
+
+.hadits-nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 15px;
+    padding-bottom: 5px;
+}
+
+.hadits-nav .page-info {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--t2);
 }
 
 .surah-title {
@@ -3456,4 +3565,69 @@ body.theme-light .tracker-item {
 
 body.theme-light .tracker-bar-container {
     background: #f1f5f9;
+}
+
+/* Zakat Name Input Fix */
+.z-name-input {
+    width: 100%;
+    padding: 12px 14px;
+    background: var(--glass);
+    border: 1px solid var(--glass-b);
+    border-radius: var(--r);
+    color: var(--t1);
+    font-size: .95rem;
+    font-family: inherit;
+    outline: none;
+    transition: all .2s;
+    box-sizing: border-box;
+}
+
+.z-name-input:focus {
+    border-color: var(--pri);
+    background: rgba(255,255,255,0.08);
+}
+
+/* Scroll To Top Button */
+.scroll-top-btn {
+    position: fixed;
+    bottom: 90px;
+    right: 20px;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: var(--glass);
+    border: 1px solid var(--glass-b);
+    backdrop-filter: blur(10px);
+    color: var(--pri);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 999;
+    transition: all .3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    opacity: 1;
+    visibility: visible;
+}
+
+.scroll-top-btn.hidden {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px) scale(0.8);
+}
+
+.scroll-top-btn:hover {
+    background: var(--pri);
+    color: white;
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px var(--pri-g);
+}
+
+@media (max-width: 600px) {
+    .scroll-top-btn {
+        bottom: 85px;
+        right: 15px;
+        width: 42px;
+        height: 42px;
+    }
 }

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'splitbill-bukber-v2';
+const CACHE_NAME = 'splitbill-bukber-v3';
 const ASSETS = [
     '/',
     '/index.html',

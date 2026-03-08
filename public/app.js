@@ -8,6 +8,7 @@ let friends = [];
 let parsedItems = [];
 let splitResults = {};
 let currentStep = 1;
+let activePage = 'home';
 
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', () => {
@@ -20,8 +21,45 @@ document.addEventListener('DOMContentLoaded', () => {
     checkPaymentReturn();
     restoreState();
     initCitySearch();
+    initScrollTop();
 });
 
+// Custom Smooth Scroll (By-pass OS "Reduce Motion" and browser janks)
+function smoothScrollTo(targetY, duration = 800) {
+    const startY = window.scrollY;
+    const diff = targetY - startY;
+    let start = null;
+
+    function step(timestamp) {
+        if (!start) start = timestamp;
+        const progress = timestamp - start;
+        const percent = Math.min(progress / duration, 1);
+        
+        // Easing: easeInOutCubic
+        const ease = percent < 0.5 ? 4 * percent * percent * percent : 1 - Math.pow(-2 * percent + 2, 3) / 2;
+        
+        window.scrollTo(0, startY + diff * ease);
+        if (progress < duration) {
+            window.requestAnimationFrame(step);
+        }
+    }
+    window.requestAnimationFrame(step);
+}
+
+function initScrollTop() {
+    const btn = document.getElementById('scroll-top-btn');
+    if (!btn) return;
+    
+    btn.onclick = (e) => {
+        e.preventDefault();
+        smoothScrollTo(0);
+    };
+
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 400) btn.classList.remove('hidden');
+        else btn.classList.add('hidden');
+    });
+}
 // ===== PARTICLES =====
 function createParticles() {
     const c = document.getElementById('particles');
@@ -81,6 +119,7 @@ function pad(n) { return n.toString().padStart(2, '0'); }
 const MORE_PAGES = ['zakat', 'kiblat', 'quran', 'tasbih', 'kalender', 'tracker'];
 
 window.switchPage = function(page) {
+    activePage = page;
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     const target = document.getElementById('page-' + page);
     if (target) target.classList.add('active');
@@ -90,7 +129,6 @@ window.switchPage = function(page) {
     document.querySelectorAll('.more-item').forEach(m => m.classList.remove('active'));
     
     if (MORE_PAGES.includes(page)) {
-        // Highlight "Lainnya" button + the specific more-item
         const moreBtn = document.getElementById('nav-more-btn');
         if (moreBtn) moreBtn.classList.add('active');
         const moreItem = document.querySelector(`.more-item[data-page="${page}"]`);
@@ -100,9 +138,10 @@ window.switchPage = function(page) {
         if (navBtn) navBtn.classList.add('active');
     }
     
-    // Show hero only on home
     const hero = document.getElementById('hero-section');
     if (hero) hero.style.display = (page === 'home') ? '' : 'none';
+    
+    saveState();
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
@@ -324,9 +363,54 @@ window.calculateSplit = function() {
     bd += `<div class="bd-row"><span class="l">Bagi Rata (${sharedItems.length} item)</span><span class="v">Rp ${fmt(Math.ceil(sharedPP))}/org</span></div>`;
     document.getElementById('breakdown-section').innerHTML = bd;
 
+    const paidList = getPaidFriends();
+    const txsRaw = JSON.parse(localStorage.getItem('srm_transactions') || '[]');
+    
     document.getElementById('results-list').innerHTML = friends.map(f => {
         const r = splitResults[f];
-        return `<div class="result-card"><div class="rc-head"><div class="rc-name">${esc(f)}</div><div class="rc-avatar">${f.charAt(0).toUpperCase()}</div></div><div class="rc-amount">Rp ${fmt(r.final)}</div><div class="rc-detail">${r.items.length > 0 ? 'Pribadi: ' + r.items.map(i=>i.name).join(', ') + '<br>' : ''}+ bagi rata (${sharedItems.length} item)${ratio !== 1 ? '<br>Termasuk pajak/service/diskon' : ''}</div><button class="btn btn-mayar" id="btn-pay-${sanitize(f)}" onclick="payMayar('${escJs(f)}',${r.final})">Bayar Rp ${fmt(r.final)}</button></div>`;
+        const isPaid = paidList.includes(f);
+        
+        // Find if this specific person has an active PENDING transaction
+        const pendingTx = txsRaw.find(t => t.status === 'PENDING' && t.type === 'SPLITBILL' && t.name === f && Number(t.amount) === Number(r.final));
+        
+        return `<div class="result-card ${isPaid ? 'is-paid' : ''}">
+            <div class="rc-head">
+                <div class="rc-user-info">
+                    <div class="rc-avatar">${f.charAt(0).toUpperCase()}</div>
+                    <div class="rc-name">${esc(f)}</div>
+                </div>
+                ${isPaid ? '<div class="paid-badge">LUNAS ✅</div>' : ''}
+            </div>
+            <div class="rc-amount">Rp ${fmt(r.final)}</div>
+            <div class="rc-detail">
+                ${r.items.length > 0 ? 'Pribadi: ' + r.items.map(i=>i.name).join(', ') + '<br>' : ''}
+                + bagi rata (${sharedItems.length} item)
+                ${ratio !== 1 ? '<br>Termasuk pajak/service/diskon' : ''}
+            </div>
+            ${isPaid ? `
+                <button class="btn btn-ghost btn-sm btn-block" onclick="togglePaidManual('${escJs(f)}')">
+                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg> Belum Bayar? (Batalkan)
+                </button>
+            ` : (pendingTx && pendingTx.link ? `
+                <div style="margin-top:10px;padding:12px;background:rgba(16,185,129,0.1);border-radius:8px;border:1px solid var(--ok);text-align:center;">
+                    <p style="margin-bottom:8px;font-size:0.8rem;color:var(--t1)">Menunggu Pembayaran Aktif</p>
+                    <button class="btn btn-primary" style="width:100%;margin-bottom:8px;font-size:0.85rem;padding:6px;background:var(--ok)" onclick="window.open('${pendingTx.link}','_blank')">Lanjutkan Pembayaran</button>
+                    <div style="display:flex;gap:6px;">
+                        <button class="btn btn-ghost" style="flex:1;font-size:0.75rem;padding:6px;border:1px solid rgba(255,255,255,0.2)" onclick="togglePaidManual('${escJs(f)}')">Tandai Lunas</button>
+                        <button class="btn btn-ghost" style="flex:1;font-size:0.75rem;padding:6px;border:1px solid rgba(255,255,255,0.2)" onclick="showPayerInfoModal('${escJs(f)}', ${r.final})">Ulangi Link</button>
+                    </div>
+                </div>
+            ` : `
+                <div class="rc-actions">
+                    <button class="btn btn-mayar" id="btn-pay-${sanitize(f)}" onclick="showPayerInfoModal('${escJs(f)}', ${r.final})">
+                        Bayar Rp ${fmt(r.final)}
+                    </button>
+                    <button class="btn btn-ghost btn-sm" onclick="togglePaidManual('${escJs(f)}')" title="Tandai Lunas Manual">
+                        &#10004;
+                    </button>
+                </div>
+            `)}
+        </div>`;
     }).join('');
 
     saveToHistory(grand, friends.length);
@@ -348,16 +432,82 @@ function launchConfetti() {
     setTimeout(() => { c.innerHTML=''; }, 4000);
 }
 
+// ===== PAYMENT PERSISTENCE HELPERS =====
+const getPaidFriends = () => JSON.parse(localStorage.getItem('splitbill_paid_list') || '[]');
+const savePaidFriend = (name) => {
+    const list = getPaidFriends();
+    if (!list.includes(name)) { list./push(name); localStorage.setItem('splitbill_paid_list', JSON.stringify(list)); }
+};
+const removePaidFriend = (name) => {
+    const list = getPaidFriends().filter(f => f !== name);
+    localStorage.setItem('splitbill_paid_list', JSON.stringify(list));
+};
+
+window.togglePaidManual = function(name) {
+    const list = getPaidFriends();
+    let isNowPaid = false;
+    if (list.includes(name)) {
+        removePaidFriend(name);
+        isNowPaid = false;
+    } else {
+        savePaidFriend(name);
+        isNowPaid = true;
+    }
+    
+    // Sync with srm_transactions
+    try {
+        const txs = JSON.parse(localStorage.getItem('srm_transactions') || '[]');
+        // Find most recent splitbill tx with this name
+        const t = txs.find(tx => tx.type === 'SPLITBILL' && tx.name === name);
+        if (t) {
+            t.status = isNowPaid ? 'PAID' : 'PENDING';
+            localStorage.setItem('srm_transactions', JSON.stringify(txs));
+            loadHistory();
+        }
+    } catch(e) {}
+    
+    if (document.getElementById('step-pay')?.classList.contains('active')) calculateSplit();
+};
+
 // ===== PAYMENT SUCCESS DETECTION =====
 function checkPaymentReturn() {
-    const pending = localStorage.getItem('splitbill_pending_pay');
-    if (pending) {
-        try {
-            const data = JSON.parse(pending);
-            if (Date.now() - data.time < 1800000) showPaymentSuccessModal(data.name, data.amount);
-        } catch(e) {}
-        localStorage.removeItem('splitbill_pending_pay');
-    }
+    // Fungsi auto-detect lunas dicabut karena tidak ada webhook asli dari Mayar via API Client.
+    // Transaksi hanya akan lunas jika ditandai manual oleh user (Tandai Lunas / togglePaidManual).
+}
+
+// ===== PAYMENT MODALS =====
+function showPayerInfoModal(name, amount) {
+    const existing = document.querySelector('.payer-modal'); if (existing) existing.remove();
+    const modal = document.createElement('div'); modal.className = 'payer-modal';
+    modal.innerHTML = `
+        <div class="pm-content">
+            <div class="pm-close" onclick="this.closest('.payer-modal').remove()">&times;</div>
+            <h3>Informasi Pembayar</h3>
+            <p>Lengkapi data untuk menerima resi resmi dari Mayar.</p>
+            <div class="pm-form">
+                <input type="email" id="p-email" placeholder="Email (Contoh: nama@email.com)" required>
+                <input type="tel" id="p-phone" placeholder="No. HP (Contoh: 08123456789)" required>
+                <button class="btn btn-primary btn-block" id="btn-p-continue">Lanjutkan Pembayaran</button>
+            </div>
+            <p class="pm-note">Data ini digunakan untuk keperluan pengiriman bukti bayar.</p>
+        </div>
+    `;
+    document.body.appendChild(modal);
+
+    document.getElementById('btn-p-continue').onclick = async () => {
+        const email = document.getElementById('p-email').value.trim();
+        const phone = document.getElementById('p-phone').value.trim();
+        
+        if (!email || !email.includes('@')) {
+            showToast('Masukkan email yang valid'); return;
+        }
+        if (phone.length < 9) {
+            showToast('Masukkan nomor HP yang valid'); return;
+        }
+
+        modal.remove();
+        await payMayar(name, amount, email, phone);
+    };
 }
 
 function showPaymentSuccessModal(name, amount) {
@@ -368,27 +518,61 @@ function showPaymentSuccessModal(name, amount) {
 }
 
 // ===== MAYAR PAYMENT =====
-window.payMayar = async function(name, amount) {
+function saveTransaction(tx) {
+    try {
+        const txs = JSON.parse(localStorage.getItem('srm_transactions') || '[]');
+        // Cek jika sudah ada yang statusnya PENDING dengan amount & name mirip, update linknya
+        const existingIdx = txs.findIndex(t => t.status === 'PENDING' && t.name === tx.name && Number(t.amount) === Number(tx.amount));
+        if (existingIdx !== -1) {
+            txs[existingIdx] = tx; // Override
+        } else {
+            txs.unshift(tx); // Insert new
+        }
+        if (txs.length > 30) txs.length = 30; // Max 30 transaksi
+        localStorage.setItem('srm_transactions', JSON.stringify(txs));
+        loadHistory();
+    } catch(e) {}
+}
+
+window.payMayar = async function(name, amount, email, phone) {
     if (amount <= 0) return;
     const btn = document.getElementById('btn-pay-' + sanitize(name));
     if (!btn) return;
     btn.textContent = 'Memproses...'; btn.disabled = true; btn.style.opacity = '.7';
     try {
-        const res = await fetch('/api/pay', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ payerName: name, amount, description: 'Patungan Bukber - ' + name }) });
+        const payload = { 
+            payerName: name, 
+            amount, 
+            description: 'Patungan Bukber - ' + name,
+            email: email || '',
+            mobile: phone || ''
+        };
+        const res = await fetch('/api/pay', { 
+            method: 'POST', 
+            headers: {'Content-Type':'application/json'}, 
+            body: JSON.stringify(payload) 
+        });
         const r = await res.json();
         if (r.success && r.link) {
-            localStorage.setItem('splitbill_pending_pay', JSON.stringify({ name, amount, time: Date.now() }));
+            const txData = {
+                id: 'tx_sb_' + Date.now(),
+                type: 'SPLITBILL',
+                name: name,
+                amount: amount,
+                link: r.link,
+                status: 'PENDING',
+                time: Date.now(),
+                dateStr: new Date().toLocaleString('id-ID'),
+                isZakat: false,
+                payerName: name
+            };
+            saveTransaction(txData);
+            
             btn.textContent = 'Link Siap'; btn.style.opacity = '1';
             btn.style.background = 'var(--ok)';
             window.open(r.link, '_blank');
-            const onReturn = () => {
-                if (document.visibilityState === 'visible') {
-                    document.removeEventListener('visibilitychange', onReturn);
-                    setTimeout(() => { showPaymentSuccessModal(name, amount); btn.textContent = 'Sudah Dibayar'; btn.disabled = true; localStorage.removeItem('splitbill_pending_pay'); }, 800);
-                }
-            };
-            document.addEventListener('visibilitychange', onReturn);
             showToast('Halaman pembayaran dibuka di tab baru');
+            if (document.getElementById('step-pay')?.classList.contains('active')) calculateSplit(); // Re-render to show pending UI
         } else throw new Error();
     } catch (e) {
         btn.textContent = 'Gagal - Coba Lagi'; btn.style.opacity = '1';
@@ -425,24 +609,100 @@ function saveToHistory(gt, pc) {
         loadHistory();
     } catch(e) {}
 }
+
 function loadHistory() {
     try {
-        const h = JSON.parse(localStorage.getItem('splitbill_history') || '[]');
         const c = document.getElementById('history-list');
         if (!c) return;
-        if (!h.length) { c.innerHTML = '<p class="empty-hist">Belum ada riwayat.</p>'; return; }
-        c.innerHTML = h.map(x => `<div class="history-card"><div class="hc-date">${x.date}</div><div class="hc-total">Rp ${fmt(x.total)}</div><div class="hc-people">${x.people} orang: ${x.friends.join(', ')}</div></div>`).join('');
+        
+        const txsRaw = JSON.parse(localStorage.getItem('srm_transactions') || '[]');
+        const h = JSON.parse(localStorage.getItem('splitbill_history') || '[]');
+        
+        let html = '';
+        
+        // 1. Tampilkan Transaksi Pembayaran (Mayar Links)
+        const txs = txsRaw.filter(t => t.status === 'PENDING' || Date.now() - t.time < 86400000); // Tampilkan PENDING selamanya, PAID 24 jam terakhir
+        if (txs.length) {
+            html += `<h4 style="margin: 0 0 10px 0; font-size: 0.9rem; color: var(--pri);">Tagihan Pembayaran</h4>`;
+            html += txs.map(t => `
+                <div class="transaction-item" style="background: rgba(255,255,255,0.05); border: 1px solid ${t.status === 'PENDING' ? 'var(--warm)' : 'var(--ok)'}; border-radius: 12px; padding: 12px; margin-bottom: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                        <div>
+                            <div style="font-weight: 600; font-size: 0.95rem;">${t.type === 'SPLITBILL' ? 'Patungan' : t.name}</div>
+                            <div style="font-size: 0.8rem; color: var(--t2);">${t.type === 'SPLITBILL' ? `Atas Nama: ${t.name}` : ''}</div>
+                        </div>
+                        <div style="font-weight: bold; color: ${t.status === 'PENDING' ? 'var(--warm)' : 'var(--ok)'}; font-size: 0.8rem; padding: 2px 6px; background: rgba(0,0,0,0.2); border-radius: 4px;">
+                            ${t.status === 'PENDING' ? 'MENGUNGGU BAYAR' : 'LUNAS'}
+                        </div>
+                    </div>
+                    <div style="font-size: 1.1rem; font-weight: bold; margin-bottom: ${t.status === 'PENDING' ? '12px' : '0'};">Rp ${fmt(t.amount)}</div>
+                    ${t.status === 'PENDING' ? `
+                        <div style="display:flex; gap: 8px; margin-top: 10px;">
+                            <button class="btn btn-primary" style="flex: 1; font-size: 0.85rem; padding: 6px; background: var(--ok); color: white; border: none;" onclick="window.open('${t.link}', '_blank')">Lanjutkan</button>
+                            <button class="btn btn-ghost" style="flex: 1; font-size: 0.82rem; padding: 6px; border: 1px solid rgba(255,255,255,0.2);" onclick="markTxPaid('${t.id}')">Tandai Lunas</button>
+                        </div>
+                    ` : ''}
+                    <div style="font-size: 0.7rem; color: var(--t3); margin-top: 8px; text-align: right;">${t.dateStr}</div>
+                </div>
+            `).join('');
+            html += `<hr style="border:0; border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0;">`;
+        }
+        
+        // 2. Tampilkan Riwayat Kalkulasi Patungan Grup
+        html += `<h4 style="margin: 0 0 10px 0; font-size: 0.9rem; color: var(--t2);">Riwayat Perhitungan Grup</h4>`;
+        if (!h.length && !txs.length) { 
+            c.innerHTML = '<p class="empty-hist">Belum ada riwayat transaksi atau perhitungan.</p>'; 
+            return; 
+        }
+        
+        html += h.map(x => `<div class="history-card"><div class="hc-date">${x.date}</div><div class="hc-total">Rp ${fmt(x.total)}</div><div class="hc-people">${x.people} orang: ${x.friends.join(', ')}</div></div>`).join('');
+        
+        c.innerHTML = html;
     } catch(e) {}
 }
-window.toggleHistory = function() { document.getElementById('history-panel')?.classList.toggle('hidden'); document.getElementById('history-overlay')?.classList.toggle('hidden'); };
-window.clearHistory = function() { localStorage.removeItem('splitbill_history'); loadHistory(); showToast('Riwayat dihapus'); };
+
+window.toggleHistory = function() { 
+    loadHistory(); // Reload everytime it's opened
+    document.getElementById('history-panel')?.classList.toggle('hidden'); 
+    document.getElementById('history-overlay')?.classList.toggle('hidden'); 
+};
+
+window.markTxPaid = function(id) {
+    try {
+        const txs = JSON.parse(localStorage.getItem('srm_transactions') || '[]');
+        const t = txs.find(t => t.id === id);
+        if (t) {
+            t.status = 'PAID';
+            localStorage.setItem('srm_transactions', JSON.stringify(txs));
+            
+            // Auto sync untuk patungan
+            if (t.type === 'SPLITBILL') {
+                savePaidFriend(t.name);
+                if (document.getElementById('step-pay')?.classList.contains('active')) calculateSplit();
+            }
+            
+            loadHistory();
+            showPaymentSuccessModal(t.name, t.amount);
+            showToast('Transaksi ditandai lunas');
+        }
+    } catch(e) {}
+};
+
+window.clearHistory = function() { 
+    localStorage.removeItem('splitbill_history'); 
+    localStorage.removeItem('srm_transactions');
+    loadHistory(); 
+    showToast('Seluruh riwayat dihapus'); 
+};
 
 // ===== RESET =====
 window.resetApp = function() {
+    if (!confirm('Hapus semua data patungan ini dan mulai baru?')) return;
     friends = []; parsedItems = []; splitResults = {};
     goToStep(1); resetUploadUI();
     const mp = document.getElementById('manual-items-preview'); if (mp) mp.innerHTML = '';
     const btn = document.getElementById('btn-manual-next'); if (btn) btn.style.display = 'none';
+    localStorage.removeItem('splitbill_paid_list');
     clearState();
     showToast('Fresh start!');
 };
@@ -453,7 +713,7 @@ window.resetApp = function() {
 function saveState() {
     try {
         localStorage.setItem('splitbill_state', JSON.stringify({
-            friends, parsedItems, currentStep, timestamp: Date.now()
+            friends, parsedItems, currentStep, activePage, timestamp: Date.now()
         }));
     } catch(e) {}
 }
@@ -463,17 +723,22 @@ function restoreState() {
         const raw = localStorage.getItem('splitbill_state');
         if (!raw) return;
         const state = JSON.parse(raw);
-        // Only restore if less than 24 hours old
         if (Date.now() - state.timestamp > 86400000) { clearState(); return; }
+        
+        // Restore active page
+        if (state.activePage && state.activePage !== 'home') {
+            switchPage(state.activePage);
+        }
+
+        // Restore split bill data
         if (state.friends?.length || state.parsedItems?.length) {
             friends = state.friends || [];
             parsedItems = state.parsedItems || [];
-            if (state.currentStep > 1 && parsedItems.length > 0) {
-                // Switch to split bill page and restore step
-                switchPage('split');
+            currentStep = state.currentStep || 1;
+            
+            if (activePage === 'split' && currentStep > 1 && parsedItems.length > 0) {
                 transitionToStep2();
-                if (state.currentStep === 1) goToStep(1);
-                showToast('Data sebelumnya dipulihkan');
+                if (currentStep === 1) goToStep(1);
             }
         }
     } catch(e) { clearState(); }
@@ -678,9 +943,57 @@ window.calculateZakat = function() {
         result.innerHTML = `<div class="zr-label">Status Zakat</div><div class="zr-value" style="-webkit-text-fill-color:var(--t2);font-size:1.2rem;">Belum Wajib Zakat</div><div class="zr-note">Harta bersih Anda (Rp ${fmt(bersih)}) belum mencapai nisab (Rp ${fmt(NISAB)}).</div>`;
     } else {
         const zakatAmt = Math.ceil(bersih * ZAKAT_RATE);
-        result.innerHTML = `<div class="zr-label">Zakat yang Harus Dibayar</div><div class="zr-value">Rp ${fmt(zakatAmt)}</div><div class="zr-note">2,5% x Rp ${fmt(bersih)} (harta bersih)</div><button class="btn btn-mayar" id="btn-pay-zakat" onclick="payZakatMayar(${zakatAmt},'Zakat Mal')">Bayar Zakat Rp ${fmt(zakatAmt)}</button>`;
+        const nameInput = document.getElementById('zakat-mal-name')?.value || 'Hamba Allah';
+        
+        let actionsHtml = `<button class="btn btn-mayar" id="btn-pay-zakat" onclick="payZakatMayar(${zakatAmt},'Zakat Mal','${escJs(nameInput)}')">Bayar Zakat Rp ${fmt(zakatAmt)}</button>`;
+        
+        const txsRaw = JSON.parse(localStorage.getItem('srm_transactions') || '[]');
+        // Find if there's any PENDING transaction that matches the type & EXACT amount
+        const pending = txsRaw.find(t => t.status === 'PENDING' && t.name === 'Zakat Mal' && Number(t.amount) === Number(zakatAmt));
+        
+        if (pending && pending.link) {
+            actionsHtml = `
+                <div style="margin-top:10px;padding:15px;background:rgba(16,185,129,0.1);border-radius:12px;border:1px solid var(--ok);text-align:center;">
+                    <p style="margin-bottom:12px;font-size:0.9rem;color:var(--t1)">Ada pembayaran aktif untuk jumlah ini.</p>
+                    <button class="btn btn-primary" style="width:100%;margin-bottom:10px;background:var(--ok)" onclick="window.open('${pending.link}','_blank')">Lanjutkan Pembayaran Sebelumnya</button>
+                    <div style="height:1px;background:rgba(255,255,255,0.1);margin:10px 0;"></div>
+                    <p style="font-size:0.75rem;opacity:0.6;margin-bottom:10px">Atau buat invoice baru jika yang lama bermasalah:</p>
+                    <button class="btn btn-ghost" style="width:100%;font-size:0.8rem;padding:6px;" onclick="payZakatMayar(${zakatAmt},'Zakat Mal','${escJs(nameInput)}')">Buat Transaksi Baru</button>
+                </div>
+            `;
+        }
+        
+        result.innerHTML = `<div class="zr-label">Zakat yang Harus Dibayar</div><div class="zr-value">Rp ${fmt(zakatAmt)}</div><div class="zr-note">2,5% x Rp ${fmt(bersih)} (harta bersih)</div>${actionsHtml}`;
     }
 };
+
+// Check active transaction on load to restore the view
+function initializeZakatMalState() {
+    try {
+        const txsRaw = JSON.parse(localStorage.getItem('srm_transactions') || '[]');
+        const pending = txsRaw.find(t => t.status === 'PENDING' && t.name === 'Zakat Mal');
+        if (pending && pending.link && document.getElementById('zakat-result')) {
+            const hargasBeras = document.getElementById('zakat-harta')?.value.replace(/\./g, '');
+            const harta = parseFloat(hargasBeras) || 0;
+            if (harta > 0) return; // Prevent overriding if user is actively typing
+            
+            // Assume reverse calculation to populate UI? Better yet, just show the box directly showing the pending amount.
+            const result = document.getElementById('zakat-result');
+            result.classList.remove('hidden');
+            result.innerHTML = `
+                <div class="zr-label">Zakat yang Harus Dibayar</div>
+                <div class="zr-value">Rp ${fmt(pending.amount)}</div>
+                <div class="zr-note">Menunggu Pembayaran Aktif</div>
+                <div style="margin-top:10px;padding:15px;background:rgba(16,185,129,0.1);border-radius:12px;border:1px solid var(--ok);text-align:center;">
+                    <p style="margin-bottom:12px;font-size:0.9rem;color:var(--t1)">Ada pembayaran aktif untuk jumlah ini.</p>
+                    <button class="btn btn-primary" style="width:100%;margin-bottom:10px;background:var(--ok)" onclick="window.open('${pending.link}','_blank')">Lanjutkan Pembayaran Sebelumnya</button>
+                    <div style="height:1px;background:rgba(255,255,255,0.1);margin:10px 0;"></div>
+                    <p style="font-size:0.75rem;opacity:0.6;margin-bottom:10px">Atau selesaikan di Tab Riwayat.</p>
+                </div>
+            `;
+        }
+    } catch(e) {}
+}
 
 // Zakat Fitrah
 window.calculateZakatFitrah = function() {
@@ -693,34 +1006,109 @@ window.calculateZakatFitrah = function() {
     if (!result) return;
     if (jiwa <= 0) { showToast('Masukkan jumlah jiwa'); return; }
     result.classList.remove('hidden');
-    result.innerHTML = `<div class="zr-label">Zakat Fitrah yang Harus Dibayar</div><div class="zr-value">Rp ${fmt(total)}</div><div class="zr-note">${jiwa} jiwa x ${beratPerJiwa} kg x Rp ${fmt(hargaBeras)}/kg</div><button class="btn btn-mayar" id="btn-pay-zakat-fitrah" onclick="payZakatMayar(${total},'Zakat Fitrah')">Bayar Zakat Fitrah Rp ${fmt(total)}</button>`;
+    const nameInput = document.getElementById('zakat-fitrah-name')?.value || 'Hamba Allah';
+    
+    let actionsHtml = `<button class="btn btn-mayar" id="btn-pay-zakat-fitrah" onclick="payZakatMayar(${total},'Zakat Fitrah','${escJs(nameInput)}')">Bayar Zakat Fitrah Rp ${fmt(total)}</button>`;
+    
+    const txsRaw = JSON.parse(localStorage.getItem('srm_transactions') || '[]');
+    // Find matching PENDING zakat fitrah
+    const pending = txsRaw.find(t => t.status === 'PENDING' && t.name === 'Zakat Fitrah' && Number(t.amount) === Number(total));
+    
+    if (pending && pending.link) {
+        actionsHtml = `
+            <div style="margin-top:10px;padding:15px;background:rgba(16,185,129,0.1);border-radius:12px;border:1px solid var(--ok);text-align:center;">
+                <p style="margin-bottom:12px;font-size:0.9rem;color:var(--t1)">Ada pembayaran aktif untuk jumlah ini.</p>
+                <button class="btn btn-primary" style="width:100%;margin-bottom:10px;background:var(--ok)" onclick="window.open('${pending.link}','_blank')">Lanjutkan Pembayaran Sebelumnya</button>
+                <div style="height:1px;background:rgba(255,255,255,0.1);margin:10px 0;"></div>
+                <p style="font-size:0.75rem;opacity:0.6;margin-bottom:10px">Atau buat invoice baru jika yang lama bermasalah:</p>
+                <button class="btn btn-ghost" style="width:100%;font-size:0.8rem;padding:6px;" onclick="payZakatMayar(${total},'Zakat Fitrah','${escJs(nameInput)}')">Buat Transaksi Baru</button>
+            </div>
+        `;
+    }
+
+    result.innerHTML = `<div class="zr-label">Zakat Fitrah yang Harus Dibayar</div><div class="zr-value">Rp ${fmt(total)}</div><div class="zr-note">${jiwa} jiwa x ${beratPerJiwa} kg x Rp ${fmt(hargaBeras)}/kg</div>${actionsHtml}`;
 };
 
-window.payZakatMayar = async function(amount, zakatType) {
-    const btnId = zakatType === 'Zakat Fitrah' ? 'btn-pay-zakat-fitrah' : 'btn-pay-zakat';
-    const btn = document.getElementById(btnId);
-    if (!btn) return;
-    btn.textContent = 'Memproses...'; btn.disabled = true; btn.style.opacity = '.7';
+function initializeZakatFitrahState() {
     try {
-        const res = await fetch('/api/pay', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ payerName: 'Pembayar ' + zakatType, amount, description: 'Pembayaran ' + zakatType }) });
+        const txsRaw = JSON.parse(localStorage.getItem('srm_transactions') || '[]');
+        const pending = txsRaw.find(t => t.status === 'PENDING' && t.name === 'Zakat Fitrah');
+        if (pending && pending.link && document.getElementById('zakat-fitrah-result')) {
+            const jiwa = parseInt(document.getElementById('zakat-jiwa')?.value);
+            if (jiwa > 1) return; // User actively typing
+            
+            const result = document.getElementById('zakat-fitrah-result');
+            result.classList.remove('hidden');
+            result.innerHTML = `
+                <div class="zr-label">Zakat Fitrah yang Harus Dibayar</div>
+                <div class="zr-value">Rp ${fmt(pending.amount)}</div>
+                <div class="zr-note">Menunggu Pembayaran Aktif</div>
+                <div style="margin-top:10px;padding:15px;background:rgba(16,185,129,0.1);border-radius:12px;border:1px solid var(--ok);text-align:center;">
+                    <p style="margin-bottom:12px;font-size:0.9rem;color:var(--t1)">Ada pembayaran aktif untuk jumlah ini.</p>
+                    <button class="btn btn-primary" style="width:100%;margin-bottom:10px;background:var(--ok)" onclick="window.open('${pending.link}','_blank')">Lanjutkan Pembayaran Sebelumnya</button>
+                    <div style="height:1px;background:rgba(255,255,255,0.1);margin:10px 0;"></div>
+                    <p style="font-size:0.75rem;opacity:0.6;margin-bottom:10px">Atau selesaikan di Tab Riwayat.</p>
+                </div>
+            `;
+        }
+    } catch(e) {}
+}
+
+window.payZakatMayar = async function(zakatAmt, typeName, payerNameRaw) {
+    const isZakatMal = typeName === 'Zakat Mal';
+    const btnId = isZakatMal ? 'btn-pay-zakat' : 'btn-pay-zakat-fitrah';
+    const btn = document.getElementById(btnId);
+    
+    if (zakatAmt <= 0) return;
+    
+    let payerName = payerNameRaw.trim();
+    if (!payerName) {
+        payerName = isZakatMal ? (document.getElementById('zakat-mal-name')?.value || 'Hamba Allah') 
+                               : (document.getElementById('zakat-fitrah-name')?.value || 'Hamba Allah');
+    }
+    
+    if (btn) { btn.textContent = 'Memproses...'; btn.disabled = true; btn.style.opacity = '.7'; }
+    try {
+        const payload = { 
+            payerName: payerName, 
+            amount: zakatAmt, 
+            description: typeName + ' - ' + payerName,
+        };
+        const res = await fetch('/api/pay', { 
+            method: 'POST', 
+            headers: {'Content-Type':'application/json'}, 
+            body: JSON.stringify(payload) 
+        });
         const r = await res.json();
         if (r.success && r.link) {
-            localStorage.setItem('splitbill_pending_pay', JSON.stringify({ name: zakatType, amount, time: Date.now() }));
-            btn.textContent = 'Link Siap'; btn.style.opacity = '1';
-            btn.style.background = 'linear-gradient(135deg,#10b981,#059669)';
-            window.open(r.link, '_blank');
-            const onReturn = () => {
-                if (document.visibilityState === 'visible') {
-                    document.removeEventListener('visibilitychange', onReturn);
-                    setTimeout(() => { showPaymentSuccessModal(zakatType, amount); btn.textContent = 'Sudah Dibayar'; btn.disabled = true; localStorage.removeItem('splitbill_pending_pay'); }, 800);
-                }
+            // Save to unified transactions array
+            const txData = {
+                id: 'tx_zakat_' + Date.now(),
+                type: 'ZAKAT',
+                name: typeName,
+                amount: zakatAmt,
+                link: r.link,
+                status: 'PENDING',
+                time: Date.now(),
+                dateStr: new Date().toLocaleString('id-ID'),
+                isZakat: true,
+                payerName: payerName
             };
-            document.addEventListener('visibilitychange', onReturn);
-            showToast('Halaman pembayaran dibuka di tab baru');
+            saveTransaction(txData);
+            
+            if (btn) {
+                btn.textContent = 'Link Siap'; btn.style.opacity = '1';
+                btn.style.background = 'var(--ok)';
+            }
+            window.open(r.link, '_blank');
+            showToast('Halaman pembayaran dibuka');
         } else throw new Error();
     } catch (e) {
-        btn.textContent = 'Gagal - Coba Lagi'; btn.style.opacity = '1'; btn.disabled = false;
-        btn.onclick = () => payZakatMayar(amount, zakatType);
+        if (btn) {
+            btn.textContent = 'Gagal - Coba Lagi'; btn.style.opacity = '1';
+            btn.style.background = 'var(--err)';
+            btn.disabled = false;
+        }
         showToast('Gagal membuat link pembayaran');
     }
 };
@@ -848,6 +1236,11 @@ window.loadSurahDetail = async function(nomor) {
     const el = document.getElementById('surah-content');
     if (!nomor || !el) return;
     el.innerHTML = '<div class="quran-loading">Memuat surah...</div>';
+    
+    // Auto-scroll to top
+    setTimeout(() => {
+        smoothScrollTo(el.offsetTop - 80);
+    }, 100);
     try {
         const res = await fetch(`/api/quran/surat/${nomor}`);
         const data = await res.json();
@@ -877,12 +1270,16 @@ function renderSurahPage() {
     // Show header on first page only
     if (currentAyatPage === 1) {
         const cleanDesc = stripHtml(s.deskripsi);
+        const isLong = cleanDesc.length > 300;
         html += `
             <div class="surah-header">
                 <div class="surah-title">${esc(s.namaLatin)}</div>
                 <div class="surah-nama-arab">${s.nama}</div>
                 <div class="surah-info">${esc(s.arti)} · ${esc(s.tempatTurun)} · ${s.jumlahAyat} Ayat</div>
-                <p class="surah-desc">${cleanDesc.substring(0, 300)}${cleanDesc.length > 300 ? '...' : ''}</p>
+                <div class="surah-desc-wrapper">
+                    <p class="surah-desc" id="surah-desc-text">${isLong ? cleanDesc.substring(0, 300) + '...' : cleanDesc}</p>
+                    ${isLong ? `<button class="btn-read-more" onclick="toggleSurahDesc(this)">Baca Selengkapnya</button>` : ''}
+                </div>
             </div>
         `;
     }
@@ -920,13 +1317,33 @@ function renderSurahPage() {
     }
     
     el.innerHTML = html;
+    
+    // Auto-scroll to top of content with a tiny delay to ensure layout is ready
+    setTimeout(() => {
+        smoothScrollTo(el.offsetTop - 80);
+    }, 100);
 }
+
+window.toggleSurahDesc = function(btn) {
+    const textEl = document.getElementById('surah-desc-text');
+    if (!textEl || !currentSurahData) return;
+    const full = stripHtml(currentSurahData.deskripsi);
+    const isExpanded = btn.textContent === 'Tutup';
+    
+    if (isExpanded) {
+        textEl.textContent = full.substring(0, 300) + '...';
+        btn.textContent = 'Baca Selengkapnya';
+    } else {
+        textEl.textContent = full;
+        btn.textContent = 'Tutup';
+    }
+};
 
 window.goAyatPage = function(page) {
     currentAyatPage = page;
     renderSurahPage();
     const el = document.getElementById('surah-content');
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (el) smoothScrollTo(el.offsetTop - 80);
 };
 
 // ----- HADITS: Load book list -----
@@ -995,15 +1412,15 @@ window.loadHaditsPage = async function(page) {
             // Pagination nav
             let navHtml = '';
             if (page > 1) {
-                navHtml += `<button class="btn btn-outline btn-sm" onclick="loadHaditsPage(${page - 1})">← Sebelumnya</button>`;
+                navHtml += `<button class="btn btn-outline btn-sm" onclick="loadHaditsPage(${page - 1})">← Sebelumnya</button> `;
             }
-            navHtml += `<span class="hadits-page-info">${start}–${end} dari ${totalHadits.toLocaleString('id-ID')}</span>`;
+            navHtml += `<span class="hadits-page-info">${start.toLocaleString('id-ID')}–${end.toLocaleString('id-ID')} dari ${totalHadits.toLocaleString('id-ID')}</span>`;
             if (page < totalPages) {
-                navHtml += `<button class="btn btn-outline btn-sm" onclick="loadHaditsPage(${page + 1})">Selanjutnya →</button>`;
+                navHtml += ` <button class="btn btn-primary btn-sm" onclick="loadHaditsPage(${page + 1})">Berikutnya →</button>`;
             }
             if (nav) nav.innerHTML = navHtml;
             
-            window.scrollTo({ top: content.offsetTop - 80, behavior: 'smooth' });
+            smoothScrollTo(content.offsetTop - 80);
         } else throw new Error();
     } catch {
         content.innerHTML = '<p style="text-align:center;color:var(--t3);padding:32px 0">Gagal memuat hadits. Periksa koneksi internet.</p>';
@@ -1020,6 +1437,42 @@ window.switchQuranTab = function(tab) {
     } else {
         document.querySelector('#page-quran .tab-btn:last-child').classList.add('active');
         document.getElementById('tab-hadits').classList.add('active');
+    }
+};
+
+
+window.initTracker = function() {
+    // ... setup
+};
+
+// ============================================================
+// INITIALIZATION
+// ============================================================
+window.onload = () => {
+    // Basic setup
+    if(!localStorage.getItem('theme')) document.documentElement.setAttribute('data-theme', 'dark');
+    renderPrayerTimes();
+    renderDoas();
+    loadHistory();
+    checkPaymentReturn();
+    
+    // Resume states
+    setTimeout(() => {
+        initializeZakatMalState();
+        initializeZakatFitrahState();
+    }, 500);
+
+    // Routing
+    const path = window.location.pathname;
+    if (path.startsWith('/invoices/')) {
+        // ... (This shouldn't happen natively on purely frontend as they open Mayar link, leaving it safe)
+    } else {
+        const hash = window.location.hash.substring(1);
+        if (hash) {
+            switchPage(hash === 'patungan' ? 'split' : hash);
+        } else {
+            switchPage('home');
+        }
     }
 };
 

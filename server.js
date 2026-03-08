@@ -46,16 +46,16 @@ app.post("/api/scan", upload.single("receipt"), async (req, res) => {
 // ============================================================
 app.post("/api/pay", async (req, res) => {
   try {
-    const { payerName, amount, description } = req.body;
+    const { payerName, amount, description, email, mobile } = req.body;
     if (!payerName || !amount) return res.status(400).json({ error: "Missing required fields" });
 
-    const MAYAR_API_URL = process.env.MAYAR_API_URL || "https://api.mayar.club/hl/v1/payment/create";
+    const MAYAR_API_URL = process.env.MAYAR_API_URL || "https://api.mayar.id/hl/v1/payment/create";
     const payload = {
       name: `Patungan Bukber - ${payerName}`,
       amount: parseInt(amount),
       description: description || "Pembayaran patungan bukber SplitBill",
-      email: `${payerName.toLowerCase().replace(/[^a-z0-9]/g, "") || "guest"}@splitbill.local`,
-      mobile: "081111111111"
+      email: email || `${payerName.toLowerCase().replace(/[^a-z0-9]/g, "") || "guest"}@splitbill.local`,
+      mobile: mobile || "081111111111"
     };
 
     console.log("[Mayar] Creating:", payload.name, "Rp", payload.amount);
