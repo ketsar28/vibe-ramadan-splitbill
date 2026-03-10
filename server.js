@@ -52,9 +52,9 @@ app.post("/api/pay", async (req, res) => {
     const MAYAR_API_URL = process.env.MAYAR_API_URL || "https://api.mayar.id/hl/v1/payment/create";
     const cleanMobile = mobile ? (mobile.startsWith('0') ? '+62' + mobile.slice(1) : (mobile.startsWith('+') ? mobile : '+62' + mobile)) : "+628111111111";
     const payload = {
-      name: `Patungan Bukber - ${payerName}`,
+      name: payerName, // This will show in the "To" section
       amount: parseInt(amount),
-      description: description || "Pembayaran patungan bukber Sahabat Ramadan",
+      description: description || `Pembayaran Sahabat Ramadan - ${payerName}`,
       email: email || `${payerName.toLowerCase().replace(/[^a-z0-9]/g, "") || "user"}@sahabatramadan.local`,
       mobile: cleanMobile,
       callback_url: `${req.protocol}://${req.get('host')}/`,
