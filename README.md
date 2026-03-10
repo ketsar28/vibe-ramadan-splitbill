@@ -1,97 +1,83 @@
-# Ramadan Companion App — Buka Bersama & Zakat Made Easy
+# 🌙 Sahabat Ramadan — AI-Powered Ramadan Companion
 
-Seringkali, momen hangat buka bersama (bukber) berakhir dengan kebingungan saat harus menghitung patungan yang adil, apalagi jika struk makanannya panjang dan rumit. Di sisi lain, menjaga ritme ibadah selama bulan suci Ramadan—seperti memantau jadwal sholat yang akurat, membaca doa harian, hingga menunaikan kewajiban zakat—terkadang membutuhkan beberapa aplikasi yang terpisah.
+**Sahabat Ramadan** adalah aplikasi pendamping ibadah yang cerdas dan estetik, dirancang khusus untuk mempermudah umat Muslim dalam menjalani bulan suci Ramadan. Aplikasi ini menggabungkan kekuatan **AI (Gemini Vision)** untuk otomasi patungan bukber dan integrasi **Mayar Headless API** untuk pembayaran zakat serta tagihan secara instan.
 
-**Ramadan Companion App** hadir sebagai solusi _all-in-one_ yang menggabungkan kemudahan teknologi AI dengan kebutuhan spiritual di bulan Ramadan. Aplikasi ini dirancang khusus untuk **Mayar Vibecoding Competition 2026**.
-
-## Akar Masalah & Solusi
-
-### 1. Masalah: Ribetnya Hitung Patungan (Split Bill)
-
-Menghitung manual struk makanan setelah bukber seringkali memakan waktu dan rentan salah hitung, terutama saat ada pajak, biaya layanan, atau diskon yang harus dibagi secara proporsional.
-
-- **Solusi:** Integrasi **Gemini AI Vision** untuk memindai struk fisik secara otomatis dan mengonversinya menjadi data digital dalam hitungan detik.
-
-### 2. Masalah: Fragmentasi Fitur Ibadah
-
-User seringkali harus berpindah-pindah aplikasi untuk melihat jadwal sholat, mencari doa harian, atau menghitung zakat mal.
-
-- **Solusi:** Sebuah platform terpadu dengan navigasi intuitif yang mencakup jadwal sholat akurat, kumpulan doa harian Ramadan, hingga kalkulator zakat yang cerdas.
-
-### 3. Masalah: Proses Pembayaran yang Terpisah
-
-Setelah menghitung zakat atau patungan, user masih harus membuka aplikasi perbankan secara manual untuk transfer.
-
-- **Solusi:** Integrasi _deep-link_ dengan **Mayar Headless Commerce API**, memungkinkan pembayaran tagihan atau zakat dilakukan langsung melalui link yang terintegrasi secara seamless.
+**Link Production:** [https://sahabat-ramadan.netlify.app/](https://sahabat-ramadan.netlify.app/)
 
 ---
 
-## Fitur Utama
+## ✨ Fitur Unggulan
 
-- **AI Split Bill:** Unggah atau foto struk, biarkan AI yang membaca item dan harganya.
-- **Jadwal Sholat Akurat:** Sinkronisasi waktu sholat menggunakan metode Kemenag RI (via Aladhan API).
-- **Doa Harian Ramadan:** Kumpulan doa penting dengan teks Arab, Latin, dan terjemahan.
-- **Kalkulator Zakat Mal:** Hitung kewajiban zakat berdasarkan nisab emas terkini dan bayar langsung via Mayar.
-- **PWA Ready:** Dapat diinstal di perangkat mobile maupun desktop untuk akses offline yang lebih cepat.
-- **Multi-Theme Support:** Pilihan tema Gelap, Terang, dan tema khusus Ramadan yang elegan.
+### 📸 AI Split Bill (Scan Struk)
 
----
+- **Problem:** Ribet hitung patungan bukber manual.
+- **Solution:** Cukup foto struk, Gemini AI Vision akan mendeteksi setiap item, harga, pajak, dan servis secara otomatis. User tinggal bagi tagihan dan generate link bayar Mayar.
 
-## Teknologi yang Digunakan
+### 💰 Kalkulator Zakat Pintar
 
-Aplikasi ini dibangun dengan fokus pada performa ringan dan estetika modern (_Aurora Glassmorphism_):
+- **Zakat Mal:** Hitung kewajiban berdasarkan nisab emas terkini.
+- **Zakat Fitrah:** Pilihan perhitungan menggunakan **Kg (2.5)** atau **Liter (3.5)** sesuai kebiasaan masing-masing, lengkap dengan integrasi pembayaran Mayar.
 
-- **Backend:** Node.js & Express.js.
-- **Frontend:** HTML5, Vanilla CSS3, & Modern JavaScript.
-- **Intelligence:** Google Gemini AI (Vision) untuk OCR struk.
-- **Payments:** Mayar Headless Commerce API (Headless Payment Link).
-- **Data Sources:** Aladhan API (Prayer Times Proxy).
-- **Capability:** Service Workers & Web App Manifest (PWA).
+### 🕋 Islamic Toolbox Lengkap
+
+- **Jadwal Sholat:** Data akurat KEMENAG RI berdasarkan lokasi kota.
+- **Al-Quran & Hadits:** Bacaan digital yang ringan dan responsif.
+- **Tasbih Digital:** Target dzikir yang bisa disesuaikan.
+- **Mutaba'ah Yaumiyah:** Checklist ibadah harian untuk menjaga konsistensi.
+- **Kalender Hijriyah & Arah Kiblat:** Penunjang ibadah harian.
 
 ---
 
-## Cara Instalasi
+## 🎨 Premium Experience
 
-Pastikan Anda sudah menginstal [Node.js](https://nodejs.org/) di perangkat Anda.
+Aplikasi ini dibangun dengan fokus pada **Vibes & Aesthetics**:
 
-1.  **Clone Repository**
-
-    ```bash
-    git clone https://github.com/username/ramadan-companion-mayar.git
-    cd ramadan-companion-mayar
-    ```
-
-2.  **Instal Dependensi**
-
-    ```bash
-    npm install
-    ```
-
-3.  **Konfigurasi Environment**
-    Buat file `.env` di direktori akar dan isi dengan API Key Anda:
-
-    ```env
-    PORT=3000
-    GEMINI_API_KEY=your_gemini_api_key
-    MAYAR_API_KEY=your_mayar_api_key
-    MAYAR_API_URL=https://api.mayar.club/hl/v1/payment/create
-    ```
-
-4.  **Jalankan Aplikasi**
-    ```bash
-    npm start
-    ```
-    Buka `http://localhost:3000` di browser favorit Anda.
+- **Instant Splash Screen:** Animasi pembuka yang halus untuk kesan premium.
+- **Aurora Glassmorphism UI:** Desain modern yang memanjakan mata dengan dukungan Mode Gelap (Dark Mode).
+- **Privacy First:** Semua riwayat transaksi dan data ibadah disimpan di `localStorage` perangkat user. Privasi 100% terjaga.
+- **PWA Ready:** Bisa di-install di Android/iOS layaknya aplikasi native.
 
 ---
 
-## Integrasi & Ekosistem
+## 🛠️ Stack Teknologi
 
-Aplikasi ini sangat bergantung pada ekosistem **Mayar** untuk menangani alur transaksi keuangan. Setiap kali user mengonfirmasi tagihan atau zakat, sistem akan berkomunikasi dengan API Mayar untuk membuat link pembayaran unik yang aman dan mendukung berbagai metode pembayaran (VA, E-Wallet, QRIS).
+- **Core:** Node.js, Express.js.
+- **AI Engine:** Google Gemini AI (Vision & Flash).
+- **Payment Gateway:** Mayar Headless Commerce API.
+- **Cloud Hosting:** Netlify (Production).
+- **Styling:** Vanilla CSS (Modern Custom Properties & Animations).
 
 ---
 
-Aplikasi ini dikembangkan dengan dedikasi penuh untuk memberikan manfaat nyata bagi masyarakat muslim di Indonesia, sekaligus menunjukkan potensi luar biasa dari integrasi AI dan _Fintech_ dalam menyederhanakan kehidupan sehari-hari.
+## 🚀 Instalasi Lokal
+
+1. **Clone Repo**
+
+   ```bash
+   git clone https://github.com/ketsar28/vibe-ramadan-splitbill.git
+   cd vibe-ramadan-splitbill
+   ```
+
+2. **Install Deps**
+
+   ```bash
+   npm install
+   ```
+
+3. **Setup .env**
+
+   ```env
+   GEMINI_API_KEY=your_key
+   MAYAR_API_KEY=your_production_key
+   MAYAR_API_URL=https://api.mayar.id/hl/v1/payment/create
+   ```
+
+4. **Run**
+   ```bash
+   npm start
+   ```
+
+---
 
 **Dibuat oleh:**
 **Muhammad Ketsar Ali Abi Wahid**
