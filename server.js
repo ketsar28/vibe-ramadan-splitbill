@@ -51,18 +51,18 @@ app.post("/api/pay", async (req, res) => {
 
     const MAYAR_API_URL = process.env.MAYAR_API_URL || "https://api.mayar.id/hl/v1/payment/create";
     const cleanMobile = mobile ? (mobile.startsWith('0') ? '+62' + mobile.slice(1) : (mobile.startsWith('+') ? mobile : '+62' + mobile)) : "+628111111111";
-    const cleanName = (payerName || "").replace(/^Patungan Bukber - /i, "").trim();
+    const cleanName = (payerName || "").replace(/^Patungan Bukber - /i, "").replace(/^Sahabat Ramadan - /i, "").trim();
     const payload = {
       name: cleanName, // This will show in the "To" section
       amount: parseInt(amount),
-      description: description || `Pembayaran Sahabat Ramadan - ${cleanName}`,
+      description: description || `Sahabat Ramadan - ${cleanName}`,
       email: email || `${cleanName.toLowerCase().replace(/[^a-z0-9]/g, "") || "user"}@sahabatramadan.local`,
       mobile: cleanMobile,
       callback_url: `${req.protocol}://${req.get('host')}/`,
       redirect_url: `${req.protocol}://${req.get('host')}/`
     };
 
-    console.log("[Mayar] Creating Payment for:", payload.name, "Rp", payload.amount);
+    console.log("[Sahabat Ramadan] Creating Payment for:", payload.name, "Rp", payload.amount);
     const mayarRes = await axios.post(MAYAR_API_URL, payload, {
       headers: { Authorization: `Bearer ${process.env.MAYAR_API_KEY}`, "Content-Type": "application/json" }
     });
