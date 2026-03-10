@@ -586,7 +586,7 @@ window.payMayar = async function(name, amount, email, phone) {
         const payload = { 
             payerName: name, 
             amount, 
-            description: 'Patungan Bukber - ' + name + ' (' + new Date().getTime() + ')',
+            description: 'Sahabat Ramadan — ' + name + ' (' + new Date().getTime() + ')',
             email: email || '',
             mobile: phone || ''
         };
@@ -1118,12 +1118,15 @@ window.payZakatMayar = async function(zakatAmt, typeName, payerNameRaw) {
                                : (document.getElementById('zakat-fitrah-name')?.value || 'Hamba Allah');
     }
     
+    // Clean name for metadata
+    const cleanName = payerName.replace(/^Patungan Bukber - /i, '').trim();
+    
     if (btn) { btn.textContent = 'Memproses...'; btn.disabled = true; btn.style.opacity = '.7'; }
     try {
         const payload = { 
-            payerName: payerName, 
+            payerName: cleanName, 
             amount: zakatAmt, 
-            description: typeName + ' - ' + payerName,
+            description: 'Sahabat Ramadan (' + typeName + ') - ' + cleanName,
         };
         const res = await fetch('/api/pay', { 
             method: 'POST', 
