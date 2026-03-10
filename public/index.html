@@ -23,10 +23,29 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Premium Splash Screen (Inline for immediate rendering) -->
+    <div id="splash-screen" style="position:fixed;inset:0;background:#030014;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 0.6s ease, visibility 0.6s;">
+        <style>
+            .splash-logo { font-size: 4rem; margin-bottom: 20px; animation: pulse 2s infinite ease-in-out; }
+            .splash-text { font-family: 'Plus Jakarta Sans', sans-serif; color: #fff; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.5px; }
+            .splash-accent { color: #6366f1; }
+            .splash-loader { margin-top: 30px; width: 40px; height: 40px; border: 3px solid rgba(99, 102, 241, 0.1); border-top-color: #6366f1; border-radius: 50%; animation: spin 1s linear infinite; }
+            @keyframes pulse { 0%, 100% { transform: scale(1); filter: drop-shadow(0 0 0px rgba(99,102,241,0)); } 50% { transform: scale(1.1); filter: drop-shadow(0 0 20px rgba(99,102,241,0.5)); } }
+            @keyframes spin { to { transform: rotate(360deg); } }
+            .splash-hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+            #app-content { opacity: 0; transition: opacity 0.8s ease; }
+            #app-content.visible { opacity: 1; }
+        </style>
+        <div class="splash-logo">🌙</div>
+        <div class="splash-text">Sahabat <span class="splash-accent">Ramadan</span></div>
+        <div class="splash-loader"></div>
+    </div>
+
     <div class="aurora-bg"><div class="orb orb-1"></div><div class="orb orb-2"></div><div class="orb orb-3"></div></div>
     <div class="particles" id="particles"></div>
     <div id="confetti-container"></div>
 
+    <div id="app-content">
     <div class="app-wrapper">
         <!-- Top Bar -->
         <nav class="top-bar">
@@ -573,6 +592,7 @@
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
     </button>
 
+    </div><!-- end app-content -->
     <script src="app.js"></script>
     <script>
         if ('serviceWorker' in navigator) {

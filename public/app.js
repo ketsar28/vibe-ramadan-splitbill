@@ -12,17 +12,60 @@ let activePage = 'home';
 
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', () => {
-    createParticles();
-    startCountdown();
-    loadHistory();
-    loadTheme();
-    renderPrayerTimes();
-    renderDoas();
-    checkPaymentReturn();
-    restoreState();
-    initCitySearch();
-    initScrollTop();
+    // Phase 1: Immediate UI (Backgrounds, Particles)
+    try {
+        createParticles();
+        startCountdown();
+        loadTheme();
+        initScrollTop();
+    } catch (e) { console.error("Critical Init Error:", e); }
+
+    // Phase 2: Content Rendering (Can be slightly delayed)
+    setTimeout(async () => {
+        try {
+            await Promise.allSettled([
+                renderPrayerTimes(),
+                renderDoas(),
+                initCitySearch(),
+                loadHistory(),
+                checkPaymentReturn(),
+                restoreState()
+            ]);
+            
+            // Resume states for Zakat
+            initializeZakatMalState();
+            initializeZakatFitrahState();
+            
+            // Routing check
+            const hash = window.location.hash.substring(1);
+            if (hash) {
+                if (window.switchPage) {
+                    window.switchPage(hash === 'patungan' ? 'split' : hash);
+                }
+            } else {
+                if (window.switchPage) window.switchPage('home');
+            }
+
+        } catch (e) {
+            console.error("Non-critical Init Error:", e);
+        } finally {
+            hideSplashScreen();
+        }
+    }, 100);
 });
+
+function hideSplashScreen() {
+    const splash = document.getElementById('splash-screen');
+    const content = document.getElementById('app-content');
+    if (splash) {
+        splash.classList.add('splash-hidden');
+        // Optional: Remove from DOM after transition
+        setTimeout(() => splash.remove(), 600);
+    }
+    if (content) {
+        content.classList.add('visible');
+    }
+}
 
 // Custom Smooth Scroll (By-pass OS "Reduce Motion" and browser janks)
 function smoothScrollTo(targetY, duration = 800) {
@@ -397,7 +440,7 @@ window.calculateSplit = function() {
                     <button class="btn btn-primary" style="width:100%;margin-bottom:8px;font-size:0.85rem;padding:6px;background:var(--ok)" onclick="window.open('${pendingTx.link}','_blank')">Lanjutkan Pembayaran</button>
                     <div style="display:flex;gap:6px;">
                         <button class="btn btn-ghost" style="flex:1;font-size:0.75rem;padding:6px;border:1px solid rgba(255,255,255,0.2)" onclick="togglePaidManual('${escJs(f)}')">Tandai Lunas</button>
-                        <button class="btn btn-ghost" style="flex:1;font-size:0.75rem;padding:6px;border:1px solid rgba(255,255,255,0.2)" onclick="showPayerInfoModal('${escJs(f)}', ${r.final})">Ulangi Link</button>
+                        <button class="btn btn-ghost" style="flex:1;font-size:0.75rem;padding:6px;border:1px solid rgba(255,255,255,0.2)" id="btn-pay-${sanitize(f)}" onclick="showPayerInfoModal('${escJs(f)}', ${r.final})">Ulangi Link</button>
                     </div>
                 </div>
             ` : `
@@ -436,7 +479,7 @@ function launchConfetti() {
 const getPaidFriends = () => JSON.parse(localStorage.getItem('splitbill_paid_list') || '[]');
 const savePaidFriend = (name) => {
     const list = getPaidFriends();
-    if (!list.includes(name)) { list./push(name); localStorage.setItem('splitbill_paid_list', JSON.stringify(list)); }
+    if (!list.includes(name)) { list.push(name); localStorage.setItem('splitbill_paid_list', JSON.stringify(list)); }
 };
 const removePaidFriend = (name) => {
     const list = getPaidFriends().filter(f => f !== name);
@@ -543,7 +586,7 @@ window.payMayar = async function(name, amount, email, phone) {
         const payload = { 
             payerName: name, 
             amount, 
-            description: 'Patungan Bukber - ' + name,
+            description: 'Patungan Bukber - ' + name + ' (' + new Date().getTime() + ')',
             email: email || '',
             mobile: phone || ''
         };
@@ -1448,33 +1491,7 @@ window.initTracker = function() {
 // ============================================================
 // INITIALIZATION
 // ============================================================
-window.onload = () => {
-    // Basic setup
-    if(!localStorage.getItem('theme')) document.documentElement.setAttribute('data-theme', 'dark');
-    renderPrayerTimes();
-    renderDoas();
-    loadHistory();
-    checkPaymentReturn();
-    
-    // Resume states
-    setTimeout(() => {
-        initializeZakatMalState();
-        initializeZakatFitrahState();
-    }, 500);
-
-    // Routing
-    const path = window.location.pathname;
-    if (path.startsWith('/invoices/')) {
-        // ... (This shouldn't happen natively on purely frontend as they open Mayar link, leaving it safe)
-    } else {
-        const hash = window.location.hash.substring(1);
-        if (hash) {
-            switchPage(hash === 'patungan' ? 'split' : hash);
-        } else {
-            switchPage('home');
-        }
-    }
-};
+// Note: Logic moved to DOMContentLoaded at the top of the file for better performance.
 
 // ============================================================
 // TASBIH DIGITAL

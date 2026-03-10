@@ -50,12 +50,15 @@ app.post("/api/pay", async (req, res) => {
     if (!payerName || !amount) return res.status(400).json({ error: "Missing required fields" });
 
     const MAYAR_API_URL = process.env.MAYAR_API_URL || "https://api.mayar.id/hl/v1/payment/create";
+    const cleanMobile = mobile ? (mobile.startsWith('0') ? '+62' + mobile.slice(1) : (mobile.startsWith('+') ? mobile : '+62' + mobile)) : "+628111111111";
     const payload = {
       name: `Patungan Bukber - ${payerName}`,
       amount: parseInt(amount),
-      description: description || "Pembayaran patungan bukber SplitBill",
-      email: email || `${payerName.toLowerCase().replace(/[^a-z0-9]/g, "") || "guest"}@splitbill.local`,
-      mobile: mobile || "081111111111"
+      description: description || "Pembayaran patungan bukber Sahabat Ramadan",
+      email: email || `${payerName.toLowerCase().replace(/[^a-z0-9]/g, "") || "user"}@sahabatramadan.local`,
+      mobile: cleanMobile,
+      callback_url: `${req.protocol}://${req.get('host')}/`,
+      redirect_url: `${req.protocol}://${req.get('host')}/`
     };
 
     console.log("[Mayar] Creating:", payload.name, "Rp", payload.amount);
