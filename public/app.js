@@ -1043,8 +1043,16 @@ window.calculateZakatFitrah = function() {
     const jiwa = parseInt(document.getElementById('zakat-jiwa')?.value) || 1;
     const hb = document.getElementById('zakat-beras')?.value.replace(/\./g, '');
     const hargaBeras = parseFloat(hb) || 15000;
-    const beratPerJiwa = 2.5; // kg
-    const total = Math.ceil(jiwa * beratPerJiwa * hargaBeras);
+    
+    const unit = document.querySelector('input[name="zakat-unit"]:checked')?.value || 'kg';
+    const amountPerJiwa = unit === 'kg' ? 2.5 : 3.5;
+    const unitLabel = unit === 'kg' ? 'kg' : 'liter';
+    
+    // Update label text in UI
+    const lb = document.getElementById('label-beras');
+    if (lb) lb.textContent = `Harga Beras per ${unit === 'kg' ? 'Kg' : 'Liter'} (Rp)`;
+
+    const total = Math.ceil(jiwa * amountPerJiwa * hargaBeras);
     const result = document.getElementById('zakat-fitrah-result');
     if (!result) return;
     if (jiwa <= 0) { showToast('Masukkan jumlah jiwa'); return; }
@@ -1069,7 +1077,7 @@ window.calculateZakatFitrah = function() {
         `;
     }
 
-    result.innerHTML = `<div class="zr-label">Zakat Fitrah yang Harus Dibayar</div><div class="zr-value">Rp ${fmt(total)}</div><div class="zr-note">${jiwa} jiwa x ${beratPerJiwa} kg x Rp ${fmt(hargaBeras)}/kg</div>${actionsHtml}`;
+    result.innerHTML = `<div class="zr-label">Zakat Fitrah yang Harus Dibayar</div><div class="zr-value">Rp ${fmt(total)}</div><div class="zr-note">${jiwa} jiwa x ${amountPerJiwa} ${unitLabel} x Rp ${fmt(hargaBeras)}/${unitLabel}</div>${actionsHtml}`;
 };
 
 function initializeZakatFitrahState() {

@@ -320,8 +320,21 @@
                             <input type="number" id="zakat-jiwa" value="1" min="1" max="50">
                         </div>
                         <div class="zk-field">
-                            <label>Harga Beras per Kg (Rp)</label>
-                            <input type="text" id="zakat-beras" class="c-input" inputmode="numeric" value="15.000">
+                            <label>Satuan Zakat</label>
+                            <div class="unit-toggle" style="display:flex;gap:10px;margin-bottom:10px;">
+                                <label style="flex:1;display:flex;align-items:center;gap:8px;padding:10px;background:rgba(255,255,255,0.05);border-radius:8px;cursor:pointer;border:1px solid rgba(255,255,255,0.1)">
+                                    <input type="radio" name="zakat-unit" value="kg" checked onchange="calculateZakatFitrah()"> 
+                                    <span>Kg (2.5)</span>
+                                </label>
+                                <label style="flex:1;display:flex;align-items:center;gap:8px;padding:10px;background:rgba(255,255,255,0.05);border-radius:8px;cursor:pointer;border:1px solid rgba(255,255,255,0.1)">
+                                    <input type="radio" name="zakat-unit" value="liter" onchange="calculateZakatFitrah()"> 
+                                    <span>Liter (3.5)</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="zk-field">
+                            <label id="label-beras">Harga Beras per Kg (Rp)</label>
+                            <input type="text" id="zakat-beras" class="c-input" inputmode="numeric" value="15.000" oninput="calculateZakatFitrah()">
                         </div>
                         <button class="btn btn-primary btn-block" onclick="calculateZakatFitrah()">Hitung Zakat Fitrah</button>
                         <div id="zakat-fitrah-result" class="hidden zakat-result"></div>
